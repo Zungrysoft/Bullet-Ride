@@ -728,6 +728,9 @@ float NUMTOTALLEVELS = 32;
 //Does nothing in older engines
 .float alpha;
 
+//Defines the checkextension builtin.
+float(string s) checkextension = #99;
+
 //Used for doors that require a certain number of runes.
 .float rune_count;
 
@@ -767,9 +770,6 @@ float NUMTOTALLEVELS = 32;
 //The number of messages it has.
 .float topMission;
 
-//Used by the Super Shotgun to be able to re-deal damage that went past a monster's max health.
-float unspent_damage;
-
 //Special properties of the world.
 .float world_properties;
 float HONEYSLIME = 1;
@@ -786,8 +786,11 @@ float(entity target) revive;
 //If zero, the monster hasn't died or is otherwise unreviveable. (Such as if the monster was gibbed.)
 .float death_anim;
 
+//How much damage must be dealt, at minimum, to deal damage at all.
+.float damage_threshold;
 
-
+//Another string for carrying extra targets for certain entities.
+.string target1;
 
 
 

@@ -1,7 +1,99 @@
 .float hb_val;
 .float hb_contents[25];
 
-float() three_pattern = {
+float() three_pattern_vert = {
+	//Checks for vertical solutions
+	//i represents the row
+	//j represents the column
+	//k represents the offset
+	float i = 0;
+	for (; i < 3; i ++) {
+		float j = 0;
+		for (; j < 5; j ++) {
+			float k = 0;
+			float found = 0;
+			for (; k < 3; k ++) {
+				if (self.hb_contents[(5 * (i+k)) + j]) {
+					found ++;
+				}
+			}
+			if (found >= 3) {
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
+float() three_pattern_horiz = {
+	//Checks for vertical solutions
+	//i represents the row
+	//j represents the column
+	//k represents the offset
+	float i = 0;
+	for (; i < 5; i ++) {
+		float j = 0;
+		for (; j < 3; j ++) {
+			float k = 0;
+			float found = 0;
+			for (; k < 3; k ++) {
+				if (self.hb_contents[(5 * i) + (j+k)]) {
+					found ++;
+				}
+			}
+			if (found >= 3) {
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
+float() three_pattern_diag1 = {
+	//Checks for vertical solutions
+	//i represents the row
+	//j represents the column
+	//k represents the offset
+	float i = 0;
+	for (; i < 3; i ++) {
+		float j = 0;
+		for (; j < 3; j ++) {
+			float k = 0;
+			float found = 0;
+			for (; k < 3; k ++) {
+				if (self.hb_contents[(5 * (i+k)) + (j+k)]) {
+					found ++;
+				}
+			}
+			if (found >= 3) {
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
+float() three_pattern_diag2 = {
+	//Checks for vertical solutions
+	//i represents the row
+	//j represents the column
+	//k represents the offset
+	float i = 0;
+	for (; i < 3; i ++) {
+		float j = 2;
+		for (; j < 5; j ++) {
+			float k = 0;
+			float found = 0;
+			for (; k < 3; k ++) {
+				if (self.hb_contents[(5 * (i+k)) + (j-k)]) {
+					found ++;
+				}
+			}
+			if (found >= 3) {
+				return 1;
+			}
+		}
+	}
 	return 0;
 }
 
@@ -23,6 +115,22 @@ float() row_pattern = {
 }
 
 float() cross_pattern = {
+	float i = 0;
+	for (; i < 2; i ++) {
+		float j = 0;
+		for (; j < 3; j ++) {
+			if (
+				self.hb_contents[(5 * (i+0)) + (j+1)] &&
+				self.hb_contents[(5 * (i+1)) + (j+0)] &&
+				self.hb_contents[(5 * (i+1)) + (j+1)] &&
+				self.hb_contents[(5 * (i+1)) + (j+2)] &&
+				self.hb_contents[(5 * (i+2)) + (j+1)] &&
+				self.hb_contents[(5 * (i+3)) + (j+1)])
+			{
+				return 1;
+			}
+		}
+	}
 	return 0;
 }
 
@@ -44,6 +152,24 @@ float() column_pattern = {
 }
 
 float() ring_pattern = {
+	float i = 0;
+	for (; i < 3; i ++) {
+		float j = 0;
+		for (; j < 3; j ++) {
+			if (
+				self.hb_contents[(5 * (i+0)) + (j+0)] &&
+				self.hb_contents[(5 * (i+1)) + (j+0)] &&
+				self.hb_contents[(5 * (i+2)) + (j+0)] &&
+				self.hb_contents[(5 * (i+2)) + (j+1)] &&
+				self.hb_contents[(5 * (i+2)) + (j+2)] &&
+				self.hb_contents[(5 * (i+1)) + (j+2)] &&
+				self.hb_contents[(5 * (i+0)) + (j+2)] &&
+				self.hb_contents[(5 * (i+0)) + (j+1)])
+			{
+				return 1;
+			}
+		}
+	}
 	return 0;
 }
 
@@ -61,10 +187,8 @@ float() twelve_pattern = {
 	return 0;
 }
 
-
-
 void() hellboard_check = {
-	if (three_pattern()) {
+	if (three_pattern_vert() || three_pattern_horiz() || three_pattern_diag1() || three_pattern_diag2()) {
 		self.target = "gate1";
 		SUB_UseTargets();
 	}
@@ -107,13 +231,14 @@ void() hellboard_use = {
 	float selected = other.hb_val;
 	if (!activator.hb_val) {
 		//Only teleport a player if the room hasn't been completed yet.
-		if (!self.hb_contents[selected]) {
+		if (!self.hb_contents[selected-1]) {
 			//Marks the player as being in a room currently.
 			activator.hb_val = 1;
 			//Teleports the player.
 			teleport_object(activator, ftos(selected + 200), 0);
+			//teleport_object(activator, "backout", 0);
 			//Marks the room as complete.
-			self.hb_contents[selected] = 1;
+			self.hb_contents[selected-1] = 1;
 			//Closes the shutter assocated with the room.
 			self.target = ftos(selected + 300);
 			SUB_UseTargets();
@@ -126,7 +251,7 @@ void() misc_hellboard = {
 };
 
 void() hellboardreturn_use = {
-	other.hb_val = 0;
+	activator.hb_val = 0;
 }
 
 void() effect_hellboardreturn = {

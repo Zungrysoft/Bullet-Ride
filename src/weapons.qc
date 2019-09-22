@@ -299,11 +299,6 @@ void(float damage, vector dir, vector spread) FireBullets2 =
 			damage_to_apply -= DAMAGEPERTRACE;
 		}
 		ApplyMultiDamage ();
-		
-		if (unspent_damage > 0) {
-			damage_to_apply += unspent_damage;
-		}
-		unspent_damage = 0;
 	}
 };
 
@@ -684,7 +679,11 @@ void() W_FireRail =
 
 void() GrenadeExplode =
 {
-	T_RadiusDamage (self, self.owner, 120, world);
+	if (self.owner.classname == "player") {
+		T_RadiusDamage (self, self.owner, 120, world);
+	} else {
+		T_RadiusDamage (self, self.owner, 40, world);
+	}
 
 	WriteByte (MSG_BROADCAST, SVC_TEMPENTITY);
 	WriteByte (MSG_BROADCAST, TE_EXPLOSION);

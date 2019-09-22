@@ -1083,3 +1083,29 @@ void() effect_countkill = {
 	self.use = countkill_use;
 }
 
+/*void() info_wander_extremes = {}
+
+void() wander_setbounds = {
+	local entity t1;
+	local entity t2;
+	
+	t1 = find(world, targetname, self.target);
+	t2 = find(world, targetname, self.target1);
+	
+	if (t1 == world || t2 == world) {
+		objerror("Could not find info_wander_extremes.");
+	}
+	
+	
+	
+}
+
+void() func_wander() = {
+	self.solid = SOLID_BSP;
+	self.movetype = MOVETYPE_PUSH;
+	setorigin (self, self.origin);	
+	setmodel (self, self.model);
+	
+	self.think = wander_setbounds;
+}*/
+

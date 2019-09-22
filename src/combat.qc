@@ -182,10 +182,14 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage=
 // team play damage avoidance
 	if ( (teamplay == 1) && (targ.team > 0)&&(targ.team == attacker.team) )
 		return;
+	
+	//Don't do the damage if the target has too high of a damage threshold.
+	if (targ.damage_threshold > take) {
+		return;
+	}
 		
 // do the damage
 	targ.health = targ.health - take;
-	unspent_damage += targ.health * -1;
 			
 	if (targ.health <= 0)
 	{
