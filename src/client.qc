@@ -31,8 +31,6 @@ void() info_intermission =
 	}
 };
 
-float reset_flag;
- 
 void() SetChangeParms = {
 	//Sets game started to 1.
 	set_specialflag(22,1);
@@ -127,7 +125,7 @@ void() ghostKeys = {
 void() ghostItems = {
 	ghostRunes();
 	
-	ghostWeapon("weapon_shotgun", 5);
+	/*ghostWeapon("weapon_shotgun", 5);
 	ghostWeapon("weapon_supershotgun", 6);
 	ghostWeapon("weapon_nailgun", 7);
 	ghostWeapon("weapon_supernailgun", 8);
@@ -135,9 +133,9 @@ void() ghostItems = {
 	ghostWeapon("weapon_rocketlauncher", 10);
 	ghostWeapon("weapon_lightning", 11);
 	ghostWeapon("weapon_railgun", 12);
-	ghostWeapon("weapon_supershotgun2", 13);
+	ghostWeapon("weapon_flamethrower", 13);
 	ghostWeapon("weapon_bfg", 14);
-	ghostWeapon("weapon_shadowblade", 15);
+	ghostWeapon("weapon_shadowblade", 15);*/
 	
 	ghostKeys();
 }
@@ -190,6 +188,7 @@ void() DecodeLevelParms =
 	
 	total_secrets = world.global_rune_total;
 	found_secrets = count_runes();
+	update_secrets();
 };
 
 /*
@@ -202,7 +201,6 @@ Returns the entity to view from
 entity() FindIntermission =
 {
 	local	entity spot;
-	local	float cyc;
 
 // look for info_intermission first
 	while (1) {
@@ -226,6 +224,7 @@ entity() FindIntermission =
 		return spot;
 	
 	objerror ("FindIntermission: no spot");
+	return world;
 };
 
 
@@ -384,8 +383,6 @@ void() execute_changelevel =
 
 void() changelevel_touch =
 {
-	local entity	pos;
-
 	if (other.classname != "player")
 		return;
 
@@ -435,10 +432,6 @@ void() trigger_changelevel =
 
 void() rune_touch =
 {
-	local entity	stemp;
-	local float		best;
-	local entity	pos;
-
 	if (other.classname != "player") {
 		return;
 	}
@@ -462,7 +455,7 @@ void() rune_touch =
 	sound (other, CHAN_ITEM, self.noise, 1, ATTN_NORM);
 	//If this is a secret rune, don't exit the level and print a message.
 	if (self.spawnflags & 2) {
-		centerprint (other, "You found a secret rune!");
+		centerprint (other, "You found a bonus rune!");
 		sound (other, CHAN_ITEM, self.noise, 1, ATTN_NORM);
 		stuffcmd (other, "bf\n");
 		return;
@@ -1561,7 +1554,6 @@ void() CheckRules =
 
 void() PlayerDeathThink =
 {
-	local entity	old_self;
 	local float		forward;
 
 	if ((self.flags & FL_ONGROUND))
@@ -1596,8 +1588,6 @@ void() PlayerDeathThink =
 
 void() PlayerJump =
 {
-	local vector start, end;
-	
 	if (self.flags & FL_WATERJUMP)
 		return;
 	
@@ -1785,9 +1775,6 @@ Called every frame before physics are run
 */
 void() PlayerPreThink =
 {
-	local	float	mspeed, aspeed;
-	local	float	r;
-
 	if (intermission_running)
 	{
 		IntermissionThink ();	// otherwise a button could be missed between
@@ -1997,9 +1984,6 @@ Called every frame after physics are run
 */
 void() PlayerPostThink =
 {
-	local	float	mspeed, aspeed;
-	local	float	r;
-
 	if (self.view_ofs == '0 0 0')
 		return;		// intermission or finale
 	if (self.deadflag)
@@ -2166,7 +2150,18 @@ void(entity targ, entity attacker) ClientObituary =
 				}
 				if (rnum == IT_NAILGUN)
 				{
-					deathstring = " was nailed by ";
+					if (attacker.items2 & IT_NAILGUN) {
+						deathstring = " was punctured by ";
+						deathstring2 = "\n";
+					} else {
+						deathstring = " was nailed by ";
+						deathstring2 = "\n";
+					}
+					
+				}
+				if (rnum == IT_RAILGUN)
+				{
+					deathstring = " was sniped by ";
 					deathstring2 = "\n";
 				}
 				if (rnum == IT_GRENADE_LAUNCHER)
@@ -2240,8 +2235,6 @@ void(entity targ, entity attacker) ClientObituary =
 					bprint (" was smashed by a Shambler\n");
 				if (attacker.classname == "monster_tarbaby")
 					bprint (" was slimed by a Spawn\n");
-				if (attacker.classname == "monster_vomit")
-					bprint (" was vomited on by a Vomitus\n");
 				if (attacker.classname == "monster_wizard")
 					bprint (" was scragged by a Scrag\n");
 				if (attacker.classname == "monster_zombie")
@@ -2264,6 +2257,26 @@ void(entity targ, entity attacker) ClientObituary =
 			if (attacker.classname == "trap_shooter" || attacker.classname == "trap_spikeshooter")
 			{
 				bprint (" was spiked\n");
+				return;
+			}
+			if (attacker.classname == "trap_grenade")
+			{
+				bprint (" was blown to smithereens\n");
+				return;
+			}
+			if (attacker.classname == "trap_rocket")
+			{
+				bprint (" was blasted to pieces\n");
+				return;
+			}
+			if (attacker.classname == "trap_flamethrower")
+			{
+				bprint (" was roasted alive\n");
+				return;
+			}
+			if (attacker.classname == "trap_lightning")
+			{
+				bprint (" was given shock treatment\n");
 				return;
 			}
 			if (attacker.classname == "fireball")
@@ -2315,6 +2328,17 @@ void(entity targ, entity attacker) ClientObituary =
 				targ.deathtype = "";
 				bprint (" fell to their death\n");
 				return;
+			}
+			
+			if (attacker.classname == "trigger_hurt") {
+				if (attacker.dmg == 9999) {
+					bprint (" fell to their death\n");
+					return;
+				}
+				if (attacker.dmg == 10000) {
+					bprint (" exited reality\n");
+					return;
+				}
 			}
 
 			// hell if I know; he's just dead!!!

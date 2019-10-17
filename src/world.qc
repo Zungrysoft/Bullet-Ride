@@ -216,6 +216,7 @@ void() worldspawn =
 	precache_sound ("weapons/lhit.wav");		//lightning
 	precache_sound ("weapons/lstart.wav");		//lightning start
 	precache_sound ("items/damage3.wav");
+	precache_sound ("items/damage2.wav");
 
 	precache_sound ("misc/power.wav");			//lightning for boss
 
@@ -294,6 +295,8 @@ void() worldspawn =
 
 	precache_model ("progs/v_light.mdl");
 	
+	precache_model("progs/burst_flame.spr");	//Flamethrower shot
+	
 
 //
 // Setup light animation tables. 'a' is total darkness, 'z' is maxbright.
@@ -371,8 +374,6 @@ void() bodyque =
 
 void() InitBodyQue =
 {
-	local entity	e;
-	
 	bodyque_head = spawn();
 	bodyque_head.classname = "bodyque";
 	bodyque_head.owner = spawn();

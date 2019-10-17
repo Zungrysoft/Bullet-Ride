@@ -176,7 +176,7 @@ void() misc_fireball =
 	self.nextthink = time + (random() * 5);
 	self.think = fire_fly;
 	if (!self.speed)
-		self.speed == 1000;
+		self.speed = 1000;
 };
 
 void() fire_fly =
@@ -346,6 +346,15 @@ Continuously fires spikes.
 "wait" time between spike (1.0 default)
 "nextthink" delay before firing first spike, so multiple shooters can be stagered.
 */
+
+void() trap_toggle = {
+	if (self.spawnflags & 1) {
+		self.spawnflags = self.spawnflags - 1;
+	} else {
+		self.spawnflags = self.spawnflags | 1;
+	}
+}
+
 void() trap_shooter =
 {
 	trap_spikeshooter ();
@@ -356,7 +365,104 @@ void() trap_shooter =
 	self.think = shooter_think;
 };
 
+void() flamethrower_think = {
+	local vector fire_angle;
+	
+	if (self.spawnflags & 1) {
+		self.nextthink = time + 0.08;
+		return;
+	}
+	entity flame = spawn();
+	flame.owner = self;
+	flame.movetype = MOVETYPE_FLYMISSILE;
+	flame.solid = SOLID_TRIGGER;
+	flame.classname = "flame";
+	
+	setmodel (flame, "progs/burst_flame.spr");
+	setsize (flame, '-4 -4 -4', '4 4 4');
+	setorigin (flame, self.origin);
+		
+// set flame speed
 
+	fire_angle_x = self.angles_x + ((random() - .5) * self.wait);
+	fire_angle_y = self.angles_y + ((random() - .5) * self.wait);
+
+	makevectors (fire_angle);
+
+	flame.angles_z = random() * 360;
+	flame.velocity = v_forward * self.speed;
+	
+	flame.touch = flame_touch;
+	
+	if (self.spawnflags & 2) {
+		flame.effects = flame.effects | EF_DIMLIGHT;
+	}
+	
+// set flame duration
+	flame.nextthink = time + .1;
+	flame.think = flame_think;
+	
+	self.nextthink = time + 0.08;
+}
+
+void() trap_flamethrower = {
+	self.think = flamethrower_think;
+	self.nextthink = .2;
+	self.use = trap_toggle;
+	
+	if (!self.speed) {
+		self.speed = 250;
+	}
+	if (!self.wait) {
+		self.wait = 15;
+	}
+};
+
+void() OgreGrenadeTouch;
+void() OgreGrenadeExplode;
+
+void() trap_grenade_use = {
+	local	entity missile;
+	
+	sound (self, CHAN_WEAPON, "weapons/grenade.wav", 1, ATTN_NORM);
+
+	missile = spawn ();
+	missile.owner = self;
+	missile.movetype = MOVETYPE_BOUNCE;
+	missile.solid = SOLID_BBOX;
+	missile.classname = "grenade";
+		
+// set missile speed	
+
+	makevectors (self.angles);
+
+	if (self.angles_x)
+		missile.velocity = v_forward*600 + v_up * 200 + crandom()*v_right*10 + crandom()*v_up*10;
+	else
+	{
+		missile.velocity = aim(self, 10000);
+		missile.velocity = missile.velocity * 600;
+		missile.velocity_z = 200;
+	}
+
+	missile.avelocity = '300 300 300';
+
+	missile.angles = vectoangles(missile.velocity);
+	
+	missile.touch = OgreGrenadeTouch;
+	
+// set missile duration
+	missile.nextthink = time + 2.5;
+	missile.think = OgreGrenadeExplode;
+
+	setmodel (missile, "progs/grenade.mdl");
+	setsize (missile, '0 0 0', '0 0 0');
+	setorigin (missile, self.origin);
+}
+
+void() trap_grenade = {
+	self.use = trap_grenade_use;
+};
 
 /*
 ===============================================================================
@@ -444,7 +550,6 @@ void() bubble_remove =
 void() bubble_bob =
 {
 local float		rnd1, rnd2, rnd3;
-local vector	vtmp1, modi;
 
 	self.cnt = self.cnt + 1;
 	if (self.cnt == 4)
@@ -522,6 +627,18 @@ void() func_wall =
 	setmodel (self, self.model);
 };
 
+void() func_monsterclip = {
+	if (coop) {
+		remove(self);
+		return;
+	}
+	self.angles = '0 0 0';
+	self.movetype = MOVETYPE_PUSH;	// so it doesn't get pushed by anything
+	self.solid = SOLID_BSP;
+	setmodel (self, self.model);
+	
+	self.owner = nextent(world);
+}
 
 /*QUAKED func_illusionary (0 .5 .8) ?
 A simple entity that looks solid but lets you walk through it.
@@ -533,7 +650,7 @@ void() func_illusionary =
 	self.movetype = MOVETYPE_NONE;
 	self.solid = SOLID_NOT;
 	setmodel (self, self.model);
-	makestatic ();
+	makestatic (self);
 };
 
 /*QUAKED func_episodegate (0 .5 .8) ? E1 E2 E3 E4
@@ -671,41 +788,63 @@ void() misc_noisemaker =
 	self.think = noise_think;
 };
 
-void() unlockitem_use = {
-	set_specialflag(self.rune_id, 1);
-	ghostItems();
-}
-
-void() effect_unlockitem = {
-	self.use = unlockitem_use;
-	
-	if (!self.rune_id) {
-		self.level_id = 5;
+void(float dm) breakable_throw_gib = {
+	local float count = 0;
+	if (self.gib1) {
+		count ++;
+		if (self.gib2) {
+			count ++;
+			if (self.gib3) {
+				count ++;
+				if (self.gib4) {
+					count ++;
+				}
+			}
+		}
 	}
-}
-
-void() striptomelee_use = {
-	if (activator.classname != "player") {
+	if (!count) {
 		return;
 	}
-	activator.items = IT_AXE;
-	activator.ammo_shells = 0;
-	activator.ammo_nails = 0;
-	activator.ammo_rockets = 0;
-	activator.ammo_cells = 0;
+	local float choice = floor(random() * count);
+	local string gib;
+	if (choice == 0) gib = self.gib1;
+	if (choice == 1) gib = self.gib2;
+	if (choice == 2) gib = self.gib3;
+	if (choice == 3) gib = self.gib4;
+	ThrowGib (gib, dm);
 }
 
-void() effect_striptomelee = {
-	self.use = striptomelee_use;
+void() breakable_sound = {
+	local float count = 0;
+	if (self.noise1) {
+		count ++;
+		if (self.noise2) {
+			count ++;
+			if (self.noise3) {
+				count ++;
+				if (self.noise4) {
+					count ++;
+				}
+			}
+		}
+	}
+	if (!count) {
+		return;
+	}
+	local float choice = floor(random() * count);
+	local string noise;
+	if (choice == 0) noise = self.noise1;
+	if (choice == 1) noise = self.noise2;
+	if (choice == 2) noise = self.noise3;
+	if (choice == 3) noise = self.noise4;
+	sound (self, CHAN_VOICE, noise, 1, ATTN_NORM);
 }
 
 void() breakable_die = {
 	SUB_UseTargets();
-	sound (self, CHAN_VOICE, self.noise, 1, ATTN_NORM);
-	float volume = (self.absmax_x - self.absmin_x) * (self.absmax_y - self.absmin_y) * (self.absmax_z - self.absmin_z);
-	float i = volume > 3 ? volume : 3;
-	for (; i > 0; i -= 40000) {
-		ThrowGib ("progs/gib_metal1.mdl", self.health + 20);
+	breakable_sound();
+	for (float i = 0; i < self.count; i ++) {
+		breakable_throw_gib(self.health + 20);
 	}
 	remove(self);
 }
@@ -716,23 +855,17 @@ void() breakable_use = {
 }
 
 void() func_breakable = {
-	precache_model ("progs/gib_metal1.mdl");
+	local float volume;
 	
-	if (self.sounds == 0)
-	{
-		precache_sound ("break/stone.wav");
-		self.noise = "break/stone.wav";
-	}
-	else if (self.sounds == 1)
-	{
-		precache_sound ("break/glass.wav");
-		self.noise = "break/glass.wav";
-	}
-	else if (self.sounds == 2)
-	{
-		precache_sound ("break/metal.wav");
-		self.noise = "break/metal.wav";
-	}
+	if (self.gib1) precache_model (self.gib1);
+	if (self.gib2) precache_model (self.gib2);
+	if (self.gib3) precache_model (self.gib3);
+	if (self.gib4) precache_model (self.gib4);
+	
+	if (self.noise1) precache_sound (self.noise1);
+	if (self.noise2) precache_sound (self.noise2);
+	if (self.noise3) precache_sound (self.noise3);
+	if (self.noise4) precache_sound (self.noise4);
 	
 	self.angles = '0 0 0';
 	self.movetype = MOVETYPE_PUSH;	// so it doesn't get pushed by anything
@@ -746,281 +879,15 @@ void() func_breakable = {
 	if (!(self.spawnflags & 1)) {
 		self.takedamage = DAMAGE_YES;
 	}
+	if (self.count == 0) {
+		volume = (self.absmax_x - self.absmin_x) * (self.absmax_y - self.absmin_y) * (self.absmax_z - self.absmin_z);
+		self.count = floor(volume / 40000);
+	}
 	self.use = breakable_use;
 	self.th_die = breakable_die;
 	
 	setorigin (self, self.origin);
 };
-
-void() globalmsg_use = {
-	entity t;
-	
-	if (self.message != "") {
-		t = world;
-		while ( 1 ) {
-			t = find (t, classname, "player");
-			if (!t) {
-				return;
-			}
-			
-			centerprint (t, self.message);
-			if (self.noise) {
-				sound (t, CHAN_VOICE, self.noise, 1, ATTN_NORM);
-			}
-		}
-	}
-};
-
-void() effect_globalmsg = {
-	if (self.sounds == 1)
-	{
-		precache_sound ("misc/secret.wav");
-		self.noise = "misc/secret.wav";
-	}
-	else if (self.sounds == 2)
-	{
-		precache_sound ("misc/talk.wav");
-		self.noise = "misc/talk.wav";
-	}
-	else if (self.sounds == 3)
-	{
-		precache_sound ("misc/trigger1.wav");
-		self.noise = "misc/trigger1.wav";
-	}
-	
-	self.use = globalmsg_use;
-};
-
-void() stuffcmd_use = {
-	stuffcmd(activator,self.message);
-	stuffcmd(activator,"\n");
-};
-
-void() effect_stuffcmd = {
-	if (!self.message) {
-		remove(self);
-		return;
-	}
-	self.use = stuffcmd_use;
-};
-
-void() localcmd_use = {
-	localcmd(self.message);
-	localcmd("\n");
-};
-
-void() effect_localcmd = {
-	if (!self.message) {
-		remove(self);
-		return;
-	}
-	self.use = localcmd_use;
-};
-
-void() changemusic_use = {
-	WriteByte (MSG_ALL, SVC_CDTRACK);
-	WriteByte (MSG_ALL, self.sounds);
-	WriteByte (MSG_ALL, 3);
-};
-
-void() effect_changemusic = {
-	self.use = changemusic_use;
-};
-
-void() missionlist_use = {
-	if (other.scroll_direction == 0) {
-		if (self.count == self.topMission) {
-			self.count = 0;
-		} else {
-			self.count ++;
-		}
-	} else if (other.scroll_direction == 1) {
-		if (self.count == 0) {
-			self.count = self.topMission;
-		} else {
-			self.count --;
-		}
-	}
-	self.message = self.missions[self.count];
-}
-
-void() effect_missionlist = {
-	if (!self.mission1) {
-		return;
-	}
-	precache_sound ("misc/talk.wav");
-	self.noise = "misc/talk.wav";
-	self.use = missionlist_use;
-	self.count = 0;
-	
-	self.missions[0] = self.mission0;
-	self.missions[1] = self.mission1;
-	self.missions[2] = self.mission2;
-	self.missions[3] = self.mission3;
-	self.missions[4] = self.mission4;
-	self.missions[5] = self.mission5;
-	self.missions[6] = self.mission6;
-	self.missions[7] = self.mission7;
-	self.missions[8] = self.mission8;
-	self.missions[9] = self.mission9;
-	self.missions[10] = self.mission10;
-	self.missions[11] = self.mission11;
-	self.missions[12] = self.mission12;
-	self.missions[13] = self.mission13;
-	self.missions[14] = self.mission14;
-	self.missions[15] = self.mission15;
-	
-	self.topMission = 0;
-	while (self.topMission < 16) {
-		self.topMission ++;
-		if (!self.missions[self.topMission]) {
-			self.topMission --;
-			break;
-		}
-	}
-	self.count = self.topMission;
-};
-
-void() hint_use = {
-	float i = 0;
-	while (i < 16) {
-		if (!get_rune(self.level_id, i)) {
-			break;
-		}
-		i ++;
-	}
-	if (!self.missions[i]) {
-		return;
-	}
-	
-	centerprint (activator, self.missions[i]);
-	sound (activator, CHAN_VOICE, "misc/talk.wav", 1, ATTN_NORM);
-}
-
-void() effect_hint = {
-	if (!self.mission1) {
-		return;
-	}
-	precache_sound ("misc/talk.wav");
-	self.noise = "misc/talk.wav";
-	self.use = hint_use;
-	
-	if (!self.level_id) {
-		self.level_id = world.level_id;
-	}
-	
-	self.missions[0] = self.mission0;
-	self.missions[1] = self.mission1;
-	self.missions[2] = self.mission2;
-	self.missions[3] = self.mission3;
-	self.missions[4] = self.mission4;
-	self.missions[5] = self.mission5;
-	self.missions[6] = self.mission6;
-	self.missions[7] = self.mission7;
-	self.missions[8] = self.mission8;
-	self.missions[9] = self.mission9;
-	self.missions[10] = self.mission10;
-	self.missions[11] = self.mission11;
-	self.missions[12] = self.mission12;
-	self.missions[13] = self.mission13;
-	self.missions[14] = self.mission14;
-	self.missions[15] = self.mission15;
-};
-
-void() effect_progressionbit_use = {
-	local float bitSet;
-	if (self.count == 1) {
-		bitSet = 20;
-	} else if (self.count < 1) {
-		bitSet = 19;
-	} else {
-		bitSet = 21;
-	}
-	
-	if (self.spawnflags & 2) {
-		//toggle rune state
-		if (get_specialflag(bitSet)) {
-			set_specialflag(bitSet, 0);
-		} else {
-			set_specialflag(bitSet, 1);
-		}
-	} else if (self.spawnflags & 1) {
-		set_specialflag(bitSet, 0);
-	} else {
-		set_specialflag(bitSet, 1);
-	}
-}
-
-void() effect_progressionbit = {
-	self.use = effect_progressionbit_use;
-}
-
-void(float ret) filter_output = {
-	if (ret && self.spawnflags & 0) {
-		SUB_UseTargets();
-	}
-	if (!ret && self.spawnflags & 1) {
-		SUB_UseTargets();
-	}
-}
-
-void() filter_progressionbit_use = {
-	local float bitGet;
-	if (self.count == 1) {
-		bitGet = 20;
-	} else if (self.count < 1) {
-		bitGet = 19;
-	} else {
-		bitGet = 21;
-	}
-	
-	filter_output(get_rune(15,bitGet));
-}
-
-void() filter_progressionbit = {
-	self.use = filter_progressionbit_use;
-}
-
-void() filter_onceperplayer_use = {
-	if (self.count >= 16) {
-		filter_output(0);
-		return;
-	}
-	if (activator.classname != "player") {
-		filter_output(0);
-		return;
-	}
-	local float i;
-	for (; i < 8; i ++) {
-		if (self.entity_used_list[i] == activator) {
-			return;
-		}
-	}
-	
-	self.entity_used_list[self.count] = activator;
-	self.count ++;
-	filter_output(1);
-}
-
-void() filter_onceperplayer = {
-	self.use = filter_onceperplayer_use;
-}
-
-void() filter_hasrune_use = {
-	filter_output(get_rune(self.level_id,self.rune_id));
-}
-
-void() filter_hasrune = {
-	self.use = filter_hasrune_use;
-}
-
-void() filter_runecount_use = {
-	filter_output(count_runes());
-}
-
-void() filter_runecount = {
-	self.use = filter_runecount_use;
-}
 
 void() trigger_auto = {
 	self.nextthink = time + .2;
@@ -1037,50 +904,6 @@ void() misc_model = {
 	if (!(self.spawnflags & 1)) {
 		makestatic (self);
 	}	
-}
-
-void() lightstyle_use = {
-	if (self.style && self.message) {
-		lightstyle(self.style, self.message);
-	}
-}
-
-void() effect_lightstyle = {
-	if (!self.targetname) {
-		lightstyle_use();
-	}
-	self.use = lightstyle_use;
-}
-
-void() revive_use = {
-	entity fnd = world;
-	while (1) {
-		fnd = find(fnd, targetname, self.target);
-		if (fnd != world) {
-			revive(fnd);
-		} else {
-			return;
-		}
-	}
-}
-
-void() effect_revive = {
-	self.use = revive_use;
-}
-
-void() countkill_use = {
-	killed_monsters += 1;
-	WriteByte(MSG_ALL, 3/*SVC_UPDATESTAT*/);
-	WriteByte(MSG_ALL, 14/*STAT_TOTALMONSTERS*/);
-	WriteLong(MSG_ALL, killed_monsters);
-}
-
-void() effect_countkill = {
-	total_monsters += self.count;
-	WriteByte(MSG_ALL, 3/*SVC_UPDATESTAT*/);
-	WriteByte(MSG_ALL, 12/*STAT_TOTALMONSTERS*/);
-	WriteLong(MSG_ALL, total_monsters);
-	self.use = countkill_use;
 }
 
 /*void() info_wander_extremes = {}

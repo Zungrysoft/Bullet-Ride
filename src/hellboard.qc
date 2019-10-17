@@ -1,5 +1,6 @@
+//Code written by ZungryWare
+
 .float hb_val;
-.float hb_contents[25];
 
 float() three_pattern_vert = {
 	//Checks for vertical solutions
@@ -13,7 +14,7 @@ float() three_pattern_vert = {
 			float k = 0;
 			float found = 0;
 			for (; k < 3; k ++) {
-				if (self.hb_contents[(5 * (i+k)) + j]) {
+				if (get_ent_data((5 * (i+k)) + j)) {
 					found ++;
 				}
 			}
@@ -37,7 +38,7 @@ float() three_pattern_horiz = {
 			float k = 0;
 			float found = 0;
 			for (; k < 3; k ++) {
-				if (self.hb_contents[(5 * i) + (j+k)]) {
+				if (get_ent_data((5 * i) + (j+k))) {
 					found ++;
 				}
 			}
@@ -61,7 +62,7 @@ float() three_pattern_diag1 = {
 			float k = 0;
 			float found = 0;
 			for (; k < 3; k ++) {
-				if (self.hb_contents[(5 * (i+k)) + (j+k)]) {
+				if (get_ent_data((5 * (i+k)) + (j+k))) {
 					found ++;
 				}
 			}
@@ -85,7 +86,7 @@ float() three_pattern_diag2 = {
 			float k = 0;
 			float found = 0;
 			for (; k < 3; k ++) {
-				if (self.hb_contents[(5 * (i+k)) + (j-k)]) {
+				if (get_ent_data((5 * (i+k)) + (j-k))) {
 					found ++;
 				}
 			}
@@ -103,7 +104,7 @@ float() row_pattern = {
 		float j = 0;
 		float found = 0;
 		for (; j < 5; j ++) {
-			if (self.hb_contents[(5 * i) + j]) {
+			if (get_ent_data((5 * i) + j)) {
 				found ++;
 			}
 		}
@@ -120,12 +121,12 @@ float() cross_pattern = {
 		float j = 0;
 		for (; j < 3; j ++) {
 			if (
-				self.hb_contents[(5 * (i+0)) + (j+1)] &&
-				self.hb_contents[(5 * (i+1)) + (j+0)] &&
-				self.hb_contents[(5 * (i+1)) + (j+1)] &&
-				self.hb_contents[(5 * (i+1)) + (j+2)] &&
-				self.hb_contents[(5 * (i+2)) + (j+1)] &&
-				self.hb_contents[(5 * (i+3)) + (j+1)])
+				get_ent_data((5 * (i+0)) + (j+1)) &&
+				get_ent_data((5 * (i+1)) + (j+0)) &&
+				get_ent_data((5 * (i+1)) + (j+1)) &&
+				get_ent_data((5 * (i+1)) + (j+2)) &&
+				get_ent_data((5 * (i+2)) + (j+1)) &&
+				get_ent_data((5 * (i+3)) + (j+1)))
 			{
 				return 1;
 			}
@@ -140,7 +141,7 @@ float() column_pattern = {
 		float j = 0;
 		float found = 0;
 		for (; j < 5; j ++) {
-			if (self.hb_contents[(5 * j) + i]) {
+			if (get_ent_data((5 * j) + i)) {
 				found ++;
 			}
 		}
@@ -157,14 +158,14 @@ float() ring_pattern = {
 		float j = 0;
 		for (; j < 3; j ++) {
 			if (
-				self.hb_contents[(5 * (i+0)) + (j+0)] &&
-				self.hb_contents[(5 * (i+1)) + (j+0)] &&
-				self.hb_contents[(5 * (i+2)) + (j+0)] &&
-				self.hb_contents[(5 * (i+2)) + (j+1)] &&
-				self.hb_contents[(5 * (i+2)) + (j+2)] &&
-				self.hb_contents[(5 * (i+1)) + (j+2)] &&
-				self.hb_contents[(5 * (i+0)) + (j+2)] &&
-				self.hb_contents[(5 * (i+0)) + (j+1)])
+				get_ent_data((5 * (i+0)) + (j+0)) &&
+				get_ent_data((5 * (i+1)) + (j+0)) &&
+				get_ent_data((5 * (i+2)) + (j+0)) &&
+				get_ent_data((5 * (i+2)) + (j+1)) &&
+				get_ent_data((5 * (i+2)) + (j+2)) &&
+				get_ent_data((5 * (i+1)) + (j+2)) &&
+				get_ent_data((5 * (i+0)) + (j+2)) &&
+				get_ent_data((5 * (i+0)) + (j+1)))
 			{
 				return 1;
 			}
@@ -177,7 +178,7 @@ float() twelve_pattern = {
 	float i = 0;
 	float found = 0;
 	for (; i < 25; i ++) {
-		if (self.hb_contents[i]) {
+		if (get_ent_data(i)) {
 			found ++;
 		}
 	}
@@ -231,14 +232,14 @@ void() hellboard_use = {
 	float selected = other.hb_val;
 	if (!activator.hb_val) {
 		//Only teleport a player if the room hasn't been completed yet.
-		if (!self.hb_contents[selected-1]) {
+		if (!get_ent_data(selected-1)) {
 			//Marks the player as being in a room currently.
 			activator.hb_val = 1;
 			//Teleports the player.
 			teleport_object(activator, ftos(selected + 200), 0);
 			//teleport_object(activator, "backout", 0);
 			//Marks the room as complete.
-			self.hb_contents[selected-1] = 1;
+			set_ent_data(selected-1, 1);
 			//Closes the shutter assocated with the room.
 			self.target = ftos(selected + 300);
 			SUB_UseTargets();
@@ -246,6 +247,7 @@ void() hellboard_use = {
 	}
 }
 
+//Class initialization
 void() misc_hellboard = {
 	self.use = hellboard_use;
 };

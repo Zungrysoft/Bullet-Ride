@@ -240,7 +240,7 @@ void() SUB_UseTargets =
 	}
 
 //
-// kill the killtagets
+// kill the killtargets
 //
 	if (self.killtarget)
 	{

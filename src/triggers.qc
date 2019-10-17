@@ -1,5 +1,5 @@
 
-entity stemp, otemp, s, old;
+entity s;
 
 
 void() trigger_reactivate =
@@ -32,14 +32,6 @@ void() multi_trigger =
 	if (self.nextthink > time)
 	{
 		return;		// allready been triggered
-	}
-
-	if (self.classname == "trigger_secret")
-	{
-		if (self.enemy.classname != "player")
-		{
-			return;
-		}
 	}
 
 	if (self.noise)
@@ -184,32 +176,17 @@ void() trigger_relay =
 
 //=============================================================================
 
-/*QUAKED trigger_secret (.5 .5 .5) ?
-secret counter trigger
-sounds
-1)	secret
-2)	beep beep
-3)
-4)
-set "message" to text string
-*/
-void() trigger_secret =
-{
-	self.message = "You found a secret area!";
-	self.sounds = 1;
-	precache_sound ("misc/secret.wav");
-	self.noise = "misc/secret.wav";
-
-	trigger_once ();
-};
+//Bullet Ride uses trigger_secret to warn players that they are playing on the wrong mod
+//trigger_secret won't do anything if everything goes smoothly
+void() trigger_secret = {
+	remove(self);
+}
 
 //=============================================================================
 
 
 void() counter_use =
 {
-	local string junk;
-
 	self.count = self.count - 1;
 	if (self.count < 0)
 		return;
@@ -346,52 +323,8 @@ local entity	death;
 	force_retouch = 2;		// make sure even still objects get hit
 };
 
-void(entity obj, string dest, float no_effects) teleport_object = {
-	local vector	org;
-	local entity	t;
-	
-	//Find the destination
-	t = find (world, targetname, dest);
-	if (!t) {
-		objerror ("couldn't find target");
-	}
-	
-	// put a tfog where the player was and in front of the destination
-	if (!no_effects) {
-		spawn_tfog (other.origin);
-		
-		makevectors (t.mangle);
-		org = t.origin + 32 * v_forward;
-		spawn_tfog (org);
-		spawn_tdeath(t.origin, other);
-	}
-	
-	// move the player and lock him down for a little while
-	if (!obj.health)
-	{
-		obj.origin = t.origin;
-		obj.velocity = (v_forward * obj.velocity_x) + (v_forward * obj.velocity_y);
-		return;
-	}
-	
-	setorigin (obj, t.origin);
-	obj.angles = t.mangle;
-	if (obj.classname == "player") {
-		obj.fixangle = 1;		// turn this way immediately
-		obj.teleport_time = time + 0.7;
-		if (obj.flags & FL_ONGROUND) {
-			obj.flags = obj.flags - FL_ONGROUND;
-		}
-		obj.velocity = v_forward * 300;
-	}
-	obj.flags = obj.flags - (obj.flags & FL_ONGROUND);
-}
-
 void() teleport_touch =
 {
-local entity	t;
-local vector	org;
-
 	if (self.targetname)
 	{
 		if (self.nextthink < time && self.nextthink != -1)
@@ -410,6 +343,8 @@ local vector	org;
 	if (other.health <= 0 || other.solid != SOLID_SLIDEBOX) {
 		return;
 	}
+	
+	
 	
 	SUB_UseTargets();
 	teleport_object(other, self.target, 0);
@@ -673,6 +608,15 @@ void() trigger_monsterjump =
 	InitTrigger ();
 	self.touch = trigger_monsterjump_touch;
 };
+
+/*void() anything_touch = {
+	SUB_UseTargets();
+}
+
+void() trigger_anything = {
+	InitTrigger ();
+	self.touch = anything_touch;
+}*/
 
 void() honey_touch = {
 	if (/*(other.waterlevel > 0) && (other.watertype == CONTENT_SLIME) && */(world.world_properties & HONEYSLIME) && (other.radsuit_finished < time)) {

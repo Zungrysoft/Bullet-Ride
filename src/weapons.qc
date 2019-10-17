@@ -104,8 +104,8 @@ SpawnMeatSpray
 */
 void(vector org, vector vel) SpawnMeatSpray =
 {
-	local	entity missile, mpuff;
-	local	vector	org;
+	local	entity missile;
+	//local	vector	org;
 
 	missile = spawn ();
 	missile.owner = self;
@@ -273,7 +273,7 @@ void(float shotcount, vector dir, vector spread) FireBullets =
 	ApplyMultiDamage ();
 };
 
-void(float damage, vector dir, vector spread) FireBullets2 =
+/*void(float damage, vector dir, vector spread) FireBullets2 =
 {
 	local	vector direction;
 	local	vector	src;
@@ -300,7 +300,7 @@ void(float damage, vector dir, vector spread) FireBullets2 =
 		}
 		ApplyMultiDamage ();
 	}
-};
+};*/
 
 /*
 ================
@@ -334,7 +334,7 @@ void() W_FireSuperShotgun =
 
 	self.punchangle_x = -4;
 	
-	if (self.currentammo == 1) {
+	if (self.currentammo <= 1) {
 		self.currentammo = self.ammo_shells = 0;
 	} else {
 		self.currentammo = self.ammo_shells = self.ammo_shells - 2;
@@ -345,7 +345,74 @@ void() W_FireSuperShotgun =
 	FireBullets (14, dir, '0.14 0.08 0');
 };
 
-void() W_FireSuperShotgun2 =
+void() flame_think = {
+	if (self.frame >= 6) {
+		remove(self);
+	} else {
+		self.frame ++;
+		self.nextthink = time + 0.1 + random() * 0.05;
+	}
+};
+
+void() flame_touch = {
+	local float dmg;
+	if (other == self.owner) {
+		return;
+	}
+	if (other.health && other.takedamage) {
+		dmg = (7 - self.frame) * 3;
+		//bprint(ftos(dmg));
+		//bprint("\n");
+		T_Damage (other, self, self.owner, dmg);
+		self.solid = SOLID_NOT;
+		self.touch = SUB_Null;
+	}
+}
+
+void() W_FireFlamethrower = {
+	local vector fire_angle;
+	
+	self.currentammo = self.ammo_cells = self.ammo_cells - 1;
+	
+	if (self.waterlevel > 1) {
+		//sound (self ,CHAN_WEAPON, "weapons/shotgn2.wav", 1, ATTN_NORM);
+		return;
+	}
+	
+	//sound (self ,CHAN_WEAPON, "weapons/shotgn2.wav", 1, ATTN_NORM);
+	
+	entity flame = spawn();
+	flame.owner = self;
+	flame.movetype = MOVETYPE_FLYMISSILE;
+	flame.solid = SOLID_BBOX;
+	flame.classname = "flame";
+	
+	setmodel (flame, "progs/burst_flame.spr");
+	//setsize (flame, '0 0 0', '0 0 0');
+	setsize (flame, '-4 -4 -4', '4 4 4');
+	makevectors (self.v_angle);
+	setorigin (flame, self.origin + v_forward*16 + '0 0 8');
+	
+// set flame speed
+
+	fire_angle_x = self.v_angle_x + ((random() - .5) * 10);
+	fire_angle_y = self.v_angle_y + ((random() - .5) * 10);
+
+	makevectors (fire_angle);
+
+	flame.angles_z = random() * 360;
+	flame.velocity = v_forward * 480;
+	
+	flame.touch = flame_touch;
+	
+	flame.effects = flame.effects | EF_DIMLIGHT;
+	
+// set flame duration
+	flame.nextthink = time + 0.1 + random() * 0.05;
+	flame.think = flame_think;
+}
+
+/*void() W_FireSuperShotgun2 =
 {
 	local vector dir;
 		
@@ -362,7 +429,7 @@ void() W_FireSuperShotgun2 =
 	dir = aim (self, 100000);
 	FireBullets2 (210, dir, '0.18 0.06 0');
 	//FireBullets2 (210, dir, '0 0 0');
-};
+};*/
 
 
 /*
@@ -403,7 +470,7 @@ void() T_MissileTouch =
 		return;
 	}
 
-	damg = 100 + random()*20;
+	damg = 110;
 	
 	if (other.health)
 	{
@@ -438,7 +505,7 @@ W_FireRocket
 void() W_FireRocket =
 {
 	
-	local	entity missile, mpuff;
+	local	entity missile;
 	
 	self.currentammo = self.ammo_rockets = self.ammo_rockets - 1;
 	
@@ -679,11 +746,7 @@ void() W_FireRail =
 
 void() GrenadeExplode =
 {
-	if (self.owner.classname == "player") {
-		T_RadiusDamage (self, self.owner, 120, world);
-	} else {
-		T_RadiusDamage (self, self.owner, 40, world);
-	}
+	T_RadiusDamage (self, self.owner, 120, world);
 
 	WriteByte (MSG_BROADCAST, SVC_TEMPENTITY);
 	WriteByte (MSG_BROADCAST, TE_EXPLOSION);
@@ -719,7 +782,7 @@ W_FireGrenade
 */
 void() W_FireGrenade =
 {
-	local	entity missile, mpuff;
+	local	entity missile;
 	
 	self.currentammo = self.ammo_rockets = self.ammo_rockets - 1;
 	
@@ -798,7 +861,6 @@ void(vector org, vector dir) launch_spike =
 void() W_FireSuperSpikes =
 {
 	local vector	dir;
-	local entity	old;
 	
 	sound (self, CHAN_WEAPON, "weapons/spike2.wav", 1, ATTN_NORM);
 	self.attack_finished = time + 0.2;
@@ -820,7 +882,6 @@ void() W_FireSuperSpikes =
 void(float ox) W_FireSpikes =
 {
 	local vector	dir;
-	local entity	old;
 	
 	makevectors (self.v_angle);
 	
@@ -851,7 +912,6 @@ void(float ox) W_FireSpikes =
 .float hit_z;
 void() spike_touch =
 {
-local float rand;
 	if (other == self.owner)
 		return;
 
@@ -891,7 +951,6 @@ local float rand;
 
 void() superspike_touch =
 {
-local float rand;
 	if (other == self.owner)
 		return;
 
@@ -957,10 +1016,17 @@ void() W_SetCurrentAmmo =
 	}
 	else if (self.weapon == IT_SUPER_SHOTGUN)
 	{
-		self.currentammo = self.ammo_shells;
-		self.weaponframe = 0;
-		self.items = self.items | IT_SHELLS;
-		self.weaponmodel = "progs/v_shot2.mdl";
+		if (self.items2 & IT_SUPER_SHOTGUN) {
+			self.currentammo = self.ammo_cells;
+			self.weaponframe = 0;
+			self.items = self.items | IT_CELLS;
+			self.weaponmodel = "progs/v_shot.mdl";
+		} else {
+			self.currentammo = self.ammo_shells;
+			self.weaponframe = 0;
+			self.items = self.items | IT_SHELLS;
+			self.weaponmodel = "progs/v_shot2.mdl";
+		}
 	}
 	else if (self.weapon == IT_NAILGUN)
 	{
@@ -1095,8 +1161,8 @@ void() W_Attack =
 	{
 		player_shot1 ();
 		if (self.items2 & IT_SUPER_SHOTGUN) {
-			W_FireSuperShotgun2 ();
-			self.attack_finished = time + 1.8;
+			W_FireFlamethrower ();
+			self.attack_finished = time + .08;
 		} else {
 			W_FireSuperShotgun ();
 			self.attack_finished = time + .7;
@@ -1252,7 +1318,6 @@ void() CheatCommand =
 		IT_KEY1 | IT_KEY2;
 		
 	self.items2 = self.items;
-	self.items2 = self.items2 - IT_SUPER_SHOTGUN;
 
 	self.weapon = IT_RAILGUN;
 	self.impulse = 0;

@@ -93,7 +93,7 @@ OgreFireGrenade
 */
 void() OgreFireGrenade =
 {
-	local	entity missile, mpuff;
+	local	entity missile;
 	
 	self.effects = self.effects | EF_MUZZLEFLASH;
 
@@ -126,6 +126,11 @@ void() OgreFireGrenade =
 	setsize (missile, '0 0 0', '0 0 0');		
 	setorigin (missile, self.origin);
 };
+
+void() OgreFireFireball = {
+	
+	
+}
 
 
 //=============================================================================
@@ -219,6 +224,26 @@ void() ogre_run6	=[	$run6,		ogre_run7	] {ai_run(4);};
 void() ogre_run7	=[	$run7,		ogre_run8	] {ai_run(13);};
 void() ogre_run8	=[	$run8,		ogre_run1	] {ai_run(24);};
 
+void() ogre_dash1	=[	$run1,		ogre_dash2	] {ai_run(13);
+if (random() < 0.2)
+	sound (self, CHAN_VOICE, "ogre/ogidle2.wav", 1, ATTN_IDLE);
+};
+void() ogre_dash2	=[	$run2,		ogre_dash3	] {ai_run(18);};
+void() ogre_dash3	=[	$run3,		ogre_dash4	] {ai_run(12);};
+void() ogre_dash4	=[	$run4,		ogre_dash5	] {ai_run(33);};
+void() ogre_dash5	=[	$run5,		ogre_dash6	] {ai_run(24);};
+void() ogre_dash6	=[	$run6,		ogre_dash7	] {ai_run(6);};
+void() ogre_dash7	=[	$run7,		ogre_dash8	] {ai_run(20);};
+void() ogre_dash8	=[	$run8,		ogre_dash1	] {ai_run(36);};
+
+void() ogre_run = {
+	if (self.classname == "monster_hell_ogre") {
+		ogre_dash1();
+	} else {
+		ogre_run1();
+	}
+}
+
 void() ogre_swing1	=[	$swing1,		ogre_swing2	] {ai_charge(11);
 sound (self, CHAN_WEAPON, "ogre/ogsawatk.wav", 1, ATTN_NORM);
 };
@@ -234,7 +259,7 @@ void() ogre_swing10	=[	$swing10,		ogre_swing11 ] {chainsaw(-200);self.angles_y =
 void() ogre_swing11	=[	$swing11,		ogre_swing12 ] {chainsaw(0);self.angles_y = self.angles_y + random()* 25;};
 void() ogre_swing12	=[	$swing12,		ogre_swing13 ] {ai_charge(3);};
 void() ogre_swing13	=[	$swing13,		ogre_swing14 ] {ai_charge(8);};
-void() ogre_swing14	=[	$swing14,		ogre_run1	] {ai_charge(9);};
+void() ogre_swing14	=[	$swing14,		ogre_run	] {ai_charge(9);};
 
 void() ogre_smash1	=[	$smash1,		ogre_smash2	] {ai_charge(6);
 sound (self, CHAN_WEAPON, "ogre/ogsawatk.wav", 1, ATTN_NORM);
@@ -250,9 +275,9 @@ void() ogre_smash9	=[	$smash9,		ogre_smash10 ] {ai_charge(13); chainsaw(0);};
 void() ogre_smash10	=[	$smash10,		ogre_smash11 ] {chainsaw(1);};
 void() ogre_smash11	=[	$smash11,		ogre_smash12 ] {ai_charge(2); chainsaw(0);
 self.nextthink = self.nextthink + random()*0.2;};	// slight variation
-void() ogre_smash12	=[	$smash12,		ogre_smash13 ] {ai_charge();};
+void() ogre_smash12	=[	$smash12,		ogre_smash13 ] {ai_charge(0);};
 void() ogre_smash13	=[	$smash13,		ogre_smash14 ] {ai_charge(4);};
-void() ogre_smash14	=[	$smash14,		ogre_run1	] {ai_charge(12);};
+void() ogre_smash14	=[	$smash14,		ogre_run	] {ai_charge(12);};
 
 void() ogre_nail1	=[	$shoot1,		ogre_nail2	] {ai_face();};
 void() ogre_nail2	=[	$shoot2,		ogre_nail3	] {ai_face();};
@@ -260,18 +285,26 @@ void() ogre_nail3	=[	$shoot2,		ogre_nail4	] {ai_face();};
 void() ogre_nail4	=[	$shoot3,		ogre_nail5	] {ai_face();OgreFireGrenade();};
 void() ogre_nail5	=[	$shoot4,		ogre_nail6	] {ai_face();};
 void() ogre_nail6	=[	$shoot5,		ogre_nail7	] {ai_face();};
-void() ogre_nail7	=[	$shoot6,		ogre_run1	] {ai_face();};
+void() ogre_nail7	=[	$shoot6,		ogre_run	] {ai_face();};
+
+void() ogre_fire1	=[	$shoot1,		ogre_fire2	] {ai_face();self.th_missile = 0;};
+void() ogre_fire2	=[	$shoot2,		ogre_fire3	] {ai_face();};
+void() ogre_fire3	=[	$shoot2,		ogre_fire4	] {ai_face();};
+void() ogre_fire4	=[	$shoot3,		ogre_fire5	] {ai_face();OgreFireFireball();};
+void() ogre_fire5	=[	$shoot4,		ogre_fire6	] {ai_face();};
+void() ogre_fire6	=[	$shoot5,		ogre_fire7	] {ai_face();};
+void() ogre_fire7	=[	$shoot6,		ogre_run	] {ai_face();};
 
 void()	ogre_pain1	=[	$pain1,		ogre_pain2	] {};
 void()	ogre_pain2	=[	$pain2,		ogre_pain3	] {};
 void()	ogre_pain3	=[	$pain3,		ogre_pain4	] {};
 void()	ogre_pain4	=[	$pain4,		ogre_pain5	] {};
-void()	ogre_pain5	=[	$pain5,		ogre_run1	] {};
+void()	ogre_pain5	=[	$pain5,		ogre_run	] {};
 
 
 void()	ogre_painb1	=[	$painb1,	ogre_painb2	] {};
 void()	ogre_painb2	=[	$painb2,	ogre_painb3	] {};
-void()	ogre_painb3	=[	$painb3,	ogre_run1	] {};
+void()	ogre_painb3	=[	$painb3,	ogre_run	] {};
 
 
 void()	ogre_painc1	=[	$painc1,	ogre_painc2	] {};
@@ -279,7 +312,7 @@ void()	ogre_painc2	=[	$painc2,	ogre_painc3	] {};
 void()	ogre_painc3	=[	$painc3,	ogre_painc4	] {};
 void()	ogre_painc4	=[	$painc4,	ogre_painc5	] {};
 void()	ogre_painc5	=[	$painc5,	ogre_painc6	] {};
-void()	ogre_painc6	=[	$painc6,	ogre_run1	] {};
+void()	ogre_painc6	=[	$painc6,	ogre_run	] {};
 
 
 void()	ogre_paind1	=[	$paind1,	ogre_paind2	] {};
@@ -297,7 +330,7 @@ void()	ogre_paind12=[	$paind12,	ogre_paind13	] {};
 void()	ogre_paind13=[	$paind13,	ogre_paind14	] {};
 void()	ogre_paind14=[	$paind14,	ogre_paind15	] {};
 void()	ogre_paind15=[	$paind15,	ogre_paind16	] {};
-void()	ogre_paind16=[	$paind16,	ogre_run1	] {};
+void()	ogre_paind16=[	$paind16,	ogre_run	] {};
 
 void()	ogre_paine1	=[	$paine1,	ogre_paine2	] {};
 void()	ogre_paine2	=[	$paine2,	ogre_paine3	] {ai_pain(10);};
@@ -313,7 +346,7 @@ void()	ogre_paine11=[	$paine11,	ogre_paine12	] {};
 void()	ogre_paine12=[	$paine12,	ogre_paine13	] {};
 void()	ogre_paine13=[	$paine13,	ogre_paine14	] {};
 void()	ogre_paine14=[	$paine14,	ogre_paine15	] {};
-void()	ogre_paine15=[	$paine15,	ogre_run1	] {};
+void()	ogre_paine15=[	$paine15,	ogre_run	] {};
 
 
 void(entity attacker, float damage)	ogre_pain =
@@ -420,7 +453,7 @@ void() ogre_rev10 = [ $death5, ogre_rev11 ] {};
 void() ogre_rev11 = [ $death4, ogre_rev12 ] {};
 void() ogre_rev12 = [ $death3, ogre_rev13 ] {};
 void() ogre_rev13 = [ $death2, ogre_rev14 ] {};
-void() ogre_rev14 = [ $death1, ogre_run1 ] {};
+void() ogre_rev14 = [ $death1, ogre_run ] {};
 
 void() ogre_brev1 = [ $bdeath10, ogre_brev2 ] {};
 void() ogre_brev2 = [ $bdeath9, ogre_brev3 ] {};
@@ -431,7 +464,7 @@ void() ogre_brev6 = [ $bdeath5, ogre_brev7 ] {};
 void() ogre_brev7 = [ $bdeath4, ogre_brev8 ] {};
 void() ogre_brev8 = [ $bdeath3, ogre_brev9 ] {};
 void() ogre_brev9 = [ $bdeath2, ogre_brev10 ] {};
-void() ogre_brev10 = [ $bdeath1, ogre_run1 ] {};
+void() ogre_brev10 = [ $bdeath1, ogre_run ] {};
 
 void () ogre_revive = {
 	self.health = 200;
@@ -486,10 +519,49 @@ void() monster_ogre =
 
 	self.th_stand = ogre_stand1;
 	self.th_walk = ogre_walk1;
-	self.th_run = ogre_run1;
+	self.th_run = ogre_run;
 	self.th_die = ogre_die;
 	self.th_melee = ogre_melee;
 	self.th_missile = ogre_nail1;
+	self.th_pain = ogre_pain;
+	self.th_revive = ogre_revive;
+	
+	walkmonster_start();
+};
+
+void() monster_hell_ogre =
+{
+	if (deathmatch)
+	{
+		remove(self);
+		return;
+	}
+	precache_model ("progs/hellogre.mdl");
+	precache_model ("progs/h_ogre.mdl");
+
+	precache_sound ("ogre/ogdrag.wav");
+	precache_sound ("ogre/ogdth.wav");
+	precache_sound ("ogre/ogidle.wav");
+	precache_sound ("ogre/ogidle2.wav");
+	precache_sound ("ogre/ogpain1.wav");
+	precache_sound ("ogre/ogsawatk.wav");
+	precache_sound ("ogre/ogwake.wav");
+
+	self.solid = SOLID_SLIDEBOX;
+	self.movetype = MOVETYPE_STEP;
+
+	setmodel (self, "progs/hellogre.mdl");
+
+	setsize (self, VEC_HULL2_MIN, VEC_HULL2_MAX);
+	self.health = 250;
+	self.ammo_rockets += 2;
+
+	self.th_stand = ogre_stand1;
+	self.th_walk = ogre_walk1;
+	self.th_run = ogre_run;
+	self.th_die = ogre_die;
+	self.th_melee = ogre_melee;
+	self.th_missile = ogre_fire1;
 	self.th_pain = ogre_pain;
 	self.th_revive = ogre_revive;
 	
@@ -502,4 +574,68 @@ void() monster_ogre_marksman =
 	monster_ogre ();
 };
 
+
+/*
+===========
+OgreCheckAttack
+
+The player is in view, so decide to move or launch an attack
+Returns FALSE if movement should continue
+============
+*/
+float() OgreCheckAttack =
+{
+	local vector	spot1, spot2;	
+	local entity	targ;
+	local float		chance;
+
+	if (enemy_range == RANGE_MELEE)
+	{
+		if (CanDamage (self.enemy, self))
+		{
+			self.attack_state = AS_MELEE;
+			return TRUE;
+		}
+	}
+
+	if (time < self.attack_finished)
+		return FALSE;
+	
+	if (!enemy_vis)
+		return FALSE;
+		
+	targ = self.enemy;
+	
+// see if any entities are in the way of the shot
+	spot1 = self.origin + self.view_ofs;
+	spot2 = targ.origin + targ.view_ofs;
+
+	traceline (spot1, spot2, FALSE, self);
+
+	if (trace_inopen && trace_inwater)
+		return FALSE;			// sight line crossed contents
+
+	if (trace_ent != targ)
+	{
+		return FALSE;	// don't have a clear shot
+	}
+			
+// missile attack
+	if (time < self.attack_finished)
+		return FALSE;
+		
+	if (enemy_range == RANGE_FAR)
+		return FALSE;
+		
+	else if (enemy_range == RANGE_NEAR)
+		chance = 0.10;
+	else if (enemy_range == RANGE_MID)
+		chance = 0.05;
+	else
+		chance = 0;
+
+	self.attack_state = AS_MISSILE;
+	SUB_AttackFinished (1 + 2*random());
+	return TRUE;
+};
 

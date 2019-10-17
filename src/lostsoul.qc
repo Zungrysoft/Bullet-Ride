@@ -1,15 +1,10 @@
 /*
 ==============================================================================
 
-WIZARD
+LOST SOUL
 
 ==============================================================================
 */
-
-$cd id1/models/a_lostsoul
-$origin 0 0 24
-$base soulbase	
-$skin soulbase
 
 //Animation definition code from Arcane Dimensions mon_lostsoul.qc
 // moving jaw up and down (talking)
@@ -42,9 +37,7 @@ $frame painb1 painb2 painb3 painb4 painb5 painb6
 // Spawning from nothing
 $frame grow1 grow2 grow3 grow4 grow5 grow6 grow7 grow8 grow9 grow10
 
-
-
-void() Soul_ChargeTouch;
+void() Soul_Charge_Touch;
 void() Soul_Bounce;
 void() Soul_Bite;
 void() Soul_Charge;
@@ -117,7 +110,7 @@ void() soul_grow9 = [ $grow9, soul_grow10 ] {};
 void() soul_grow10 = [ $grow10, soul_standby1 ] {};
 
 void()	soul_walk1 = {
-	soul_hover1;
+	soul_hover1();
 };
 
 void(entity attacker, float damage)	soul_pain =
@@ -129,7 +122,7 @@ void(entity attacker, float damage)	soul_pain =
 	
 	self.velocity = 0;
 	self.movetype = MOVETYPE_STEP;
-	self.touch = SUB_Null;
+	self.attack_finished = time + 1.3;
 	
 	if (random() > .5) {
 		soul_pain1 ();
@@ -190,40 +183,39 @@ float()	CheckSoulCharge =
 {
 	local	vector	dist;
 	local	float	d;
-
-	/*if (self.origin_z + self.mins_z > self.enemy.origin_z + self.enemy.mins_z
-	+ 0.75 * self.enemy.size_z)
-		bprint("1\n");
+	
+	if (self.attack_finished > time) {
 		return FALSE;
-		
-	if (self.origin_z + self.maxs_z < self.enemy.origin_z + self.enemy.mins_z
-	+ 0.25 * self.enemy.size_z)
-		bprint("2\n");
-		return FALSE;*/
-		
+	}
+	
+	if (random() < 0.5) {
+		return FALSE;
+	}
+	
+	//Check distance
 	dist = self.enemy.origin - self.origin;
 	dist_z = 0;
 	
 	d = vlen(dist);
 	
 	if (d < 50) {
-		//bprint("3\n");
 		return FALSE;
 	}
 		
-	if (d > 400)
-	{
-		if (random() < 0.9)
-			//bprint("4\n");
+	if (d > 400) {
+		if (random() < 0.9) {
 			return FALSE;
+		}
 	}
 		
 	return TRUE;
 };
 
-float()	SoulCheckAttack =
-{
-	local	vector	vec;
+float()	SoulCheckAttack = {
+	//Don't attack if it's already flying
+	if (self.movetype == MOVETYPE_FLYMISSILE) {
+		return FALSE;
+	}
 	
 	// if close enough for biting, go for it
 	if (CheckSoulMelee ())
@@ -245,8 +237,7 @@ float()	SoulCheckAttack =
 
 //===========================================================================
 
-void() Soul_Bite =
-{
+void() Soul_Bite = {
 	local vector	delta;
 	
 	ai_face ();
@@ -270,7 +261,6 @@ void() Soul_Bite =
 
 void() Soul_Charge = {
 	sound (self, CHAN_VOICE, "lostsoul/charge.wav", 1, ATTN_NORM);
-	self.touch = Soul_ChargeTouch;
 	self.movetype = MOVETYPE_FLYMISSILE;
 	//makevectors(self.angles);
 	//self.velocity = 500 * v_forward;
@@ -278,8 +268,11 @@ void() Soul_Charge = {
 	self.nextthink = time + 10;
 }
 
-
-void() Soul_ChargeTouch = {
+void() Soul_Charge_Touch = {
+	if (self.movetype != MOVETYPE_FLYMISSILE) {
+		return;
+	}
+	
 	if (other.takedamage && other.classname != "monster_lostsoul")
 	{
 		if ( vlen(self.velocity) > 300 ) {
@@ -288,7 +281,9 @@ void() Soul_ChargeTouch = {
 	}
 	self.velocity = 0;
 	self.movetype = MOVETYPE_STEP;
-	self.touch = SUB_Null;
+	self.attack_finished = time + 1.3;
+	//self.attack_state = AS_
+	
 	Soul_Bounce();
 };
 
@@ -332,7 +327,7 @@ void() monster_lostsoul =
 
 	setmodel (self, "progs/lostsoul.mdl");
 
-	setsize (self, (-7, -7, -7), (7, 7, 7));
+	setsize (self, '-7 -7 -7', '7 7 7');
 	self.health = 50;
 
 	self.th_stand = soul_hover1;
@@ -342,6 +337,7 @@ void() monster_lostsoul =
 	self.th_melee = soul_melee;		// one of two attacks
 	self.th_missile = soul_missile;			// jump attack
 	self.th_pain = soul_pain;
+	self.touch = Soul_Charge_Touch;
 		
 	flymonster_start ();
 };

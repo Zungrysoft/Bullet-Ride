@@ -1,10 +1,12 @@
+//Code written by ZungryWare
+
 float (float num, float shift) bshift_left = {
 	float ret = num;
 	for (float i = 0; i < shift; i ++) {
 		ret = ret * 2;
 	}
 	return ret;
-};
+}
 
 float (float num, float shift) bshift_right = {
 	float ret = num;
@@ -12,7 +14,16 @@ float (float num, float shift) bshift_right = {
 		ret = ret / 2;
 	}
 	return ret;
-};
+}
+
+float mod(float dividend, float divisor) {
+	return dividend - (floor(dividend / divisor) * divisor);
+}
+
+//Returns a value min <= x < max
+float random_range(float min, float max) = {
+	return min + (random() * (max - min));
+}
 
 //Sets a bit in the runeflags array
 //I recommend that you use set_rune, set_specialflag, or set_key instead if you don't know what you're doing.
@@ -147,10 +158,10 @@ float (float level, float key) get_key = {
 	
 	if (key == 0) {
 		//Return whether the 22nd bit is set
-		return runeflags[level] & 4194304;
+		return get_runeflag(level, 22);
 	} else {
 		//Return whether the 23rd bit is set
-		return runeflags[level] & 8388608;
+		return get_runeflag(level, 23);
 	}
 }
 
@@ -166,15 +177,15 @@ void (float level, float key, float value) set_key = {
 	}
 	
 	if (key == 0) {
-		//Return whether the 22nd bit is set
-		runeflags[level] = runeflags[level] | 4194304;
+		//Set the 22nd bit
+		set_runeflag(level, 22, value);
 	} else {
-		//Return whether the 23rd bit is set
-		runeflags[level] = runeflags[level] | 8388608;
+		//Set the 23rd bit
+		set_runeflag(level, 23, value);
 	}
 }
 
-//Counts the total number of runes collected in a certain level.
+//Counts the number of runes collected in a certain level.
 float (float level) count_level_runes = {
 	if (level < 0 || level > NUMLEVELS-1) {
 		bprint("[Error] count_level_runes function expects a level value between 0 and ");
@@ -201,15 +212,108 @@ float (float level) count_level_runes = {
 float () count_runes = {
 	float total = 0;
 	
-	for (float i = 0; i < NUMLEVELS-1; i ++) {
+	for (float i = 0; i < NUMLEVELS; i ++) {
 		total += count_level_runes(i);
 	}
 	return total;
 };
 
-void() debugFunc = {
-	count_level_runes(55);
+void() update_secrets = {
+	WriteByte(MSG_ALL, 3/*SVC_UPDATESTAT*/);
+	WriteByte(MSG_ALL, 11/*STAT_TOTALSECRETS*/);
+	WriteLong(MSG_ALL, total_secrets);
+	
+	WriteByte(MSG_ALL, 3/*SVC_UPDATESTAT*/);
+	WriteByte(MSG_ALL, 13/*STAT_FOUNDSECRETS*/);
+	WriteLong(MSG_ALL, found_secrets);
 }
 
+void() update_monsters = {
+	WriteByte(MSG_ALL, 3/*SVC_UPDATESTAT*/);
+	WriteByte(MSG_ALL, 12/*STAT_TOTALMONSTERS*/);
+	WriteLong(MSG_ALL, total_monsters);
+	
+	WriteByte(MSG_ALL, 3/*SVC_UPDATESTAT*/);
+	WriteByte(MSG_ALL, 14/*STAT_KILLEDMONSTERS*/);
+	WriteLong(MSG_ALL, killed_monsters);
+}
 
+void() debugFunc = {
+	//bprint(ftos(time));
+	//bprint("\n");
+	centerprint(nextent(world),"ERROR\n-----\nYou have installed\nthis mod incorrectly!!\n-----\nPlease read the readme file\nfor more information.");
+}
 
+void(float index, float val) set_ent_data = {
+	if (index < 0 || index > (ENT_DATA_SIZE * 23)) {
+		//return if out of range
+		return;
+	}
+	
+	float ind = floor(index / 23);
+	float bit = mod(index, 23);
+	float bit_val = bshift_left(1,bit);
+	
+	if (val) {
+		self.ent_data[ind] = self.ent_data[ind] | bit_val;
+	} else {
+		self.ent_data[ind] = (self.ent_data[ind] | bit_val) - bit_val;
+	}
+}
+
+float(float index) get_ent_data = {
+	if (index < 0 || index > (ENT_DATA_SIZE * 23)) {
+		//return if out of range
+		return -1;
+	}
+	
+	float ind = floor(index / 23);
+	float bit = mod(index, 23);
+	float bit_val = bshift_left(1,bit);
+	
+	return self.ent_data[ind] & bit_val;
+}
+
+void(vector org) spawn_tfog;
+void(vector org, entity death_owner) spawn_tdeath;
+
+void (entity obj, string dest, float no_effects) teleport_object = {
+	local vector	org;
+	local entity	t;
+	
+	//Find the destination
+	t = find (world, targetname, dest);
+	if (!t) {
+		objerror ("couldn't find target");
+	}
+	
+	// put a tfog where the player was and in front of the destination
+	if (!no_effects) {
+		spawn_tfog (other.origin);
+		
+		makevectors (t.mangle);
+		org = t.origin + 32 * v_forward;
+		spawn_tfog (org);
+		spawn_tdeath(t.origin, other);
+	}
+	
+	// move the player and lock him down for a little while
+	if (!obj.health)
+	{
+		obj.origin = t.origin;
+		obj.velocity = (v_forward * obj.velocity_x) + (v_forward * obj.velocity_y);
+		return;
+	}
+	
+	setorigin (obj, t.origin);
+	obj.angles = t.mangle;
+	if (obj.classname == "player") {
+		obj.fixangle = 1;		// turn this way immediately
+		obj.teleport_time = time + 0.7;
+		if (obj.flags & FL_ONGROUND) {
+			obj.flags = obj.flags - FL_ONGROUND;
+		}
+		obj.velocity = v_forward * 300;
+	}
+	obj.flags = obj.flags - (obj.flags & FL_ONGROUND);
+}

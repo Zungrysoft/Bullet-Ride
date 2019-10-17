@@ -167,16 +167,18 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage=
 	}
 
 // check for godmode or invincibility
-	if (targ.flags & FL_GODMODE)
+	if (targ.flags & FL_GODMODE) {
 		return;
-	if (targ.invincible_finished >= time)
-	{
-		if (self.invincible_sound < time)
-		{
-			sound (targ, CHAN_ITEM, "items/protect3.wav", 1, ATTN_NORM);
-			self.invincible_sound = time + 2;
+	}
+	if (targ.invincible_finished >= time) {
+		//Trigger hurts can kill even invincible players if they deal enough damage.
+		if (!(attacker.classname == "trigger_hurt" && (attacker.dmg >= 9999))) {
+			if (self.invincible_sound < time) {
+				sound (targ, CHAN_ITEM, "items/protect3.wav", 1, ATTN_NORM);
+				self.invincible_sound = time + 2;
+			}
+			return;
 		}
-		return;
 	}
 
 // team play damage avoidance
@@ -187,7 +189,8 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage=
 	if (targ.damage_threshold > take) {
 		return;
 	}
-		
+	//bprint(ftos(take));
+	//bprint("\n");
 // do the damage
 	targ.health = targ.health - take;
 			

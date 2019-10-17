@@ -398,7 +398,6 @@ float	movedist;
 float	gameover;		// set when a rule exits
 
 string	string_null;	// null string, nothing should be held here
-float	empty_float;
 
 entity	newmis;			// launch_spike sets this after spawning it
 
@@ -449,10 +448,10 @@ float		skill;
 .float	search_time;
 .float	attack_state;
 
-float	AS_STRAIGHT		= 1;
-float	AS_SLIDING		= 2;
-float	AS_MELEE		= 3;
-float	AS_MISSILE		= 4;
+#define	AS_STRAIGHT 1
+#define	AS_SLIDING 2
+#define	AS_MELEE 3
+#define	AS_MISSILE 4
 
 //
 // player only fields
@@ -599,7 +598,7 @@ void() traceoff						= #30;
 void(entity e) eprint				= #31;		// prints an entire edict
 float(float yaw, float dist) walkmove	= #32;	// returns TRUE or FALSE
 // #33 was removed
-float(float yaw, float dist) droptofloor= #34;	// TRUE if landed on floor
+float() droptofloor= #34;	// TRUE if landed on floor
 void(float style, string value) lightstyle = #35;
 float(float v) rint					= #36;		// round to nearest int
 float(float v) floor				= #37;		// largest integer <= v
@@ -737,9 +736,6 @@ float(string s) checkextension = #99;
 //The message that displays when the player fails to open a door.
 .string fail_message;
 
-//Material for func_breakable
-.float material;
-
 //Whether the entity is enabled or not.
 .float enabled;
 
@@ -774,9 +770,6 @@ float(string s) checkextension = #99;
 .float world_properties;
 float HONEYSLIME = 1;
 
-//Used for filter_onceperplayer to track which players have triggered it already.
-.entity entity_used_list[16];
-
 //A function that can be called on monsters to revive them.
 float(entity target) revive;
 //Used to set the behavior for each monster when revived.
@@ -789,10 +782,23 @@ float(entity target) revive;
 //How much damage must be dealt, at minimum, to deal damage at all.
 .float damage_threshold;
 
-//Another string for carrying extra targets for certain entities.
-.string target1;
+//An array of bitfields an entity can store that can be edited via the set_ent_data() and get_ent_data()
+#define ENT_DATA_SIZE 16
+.float ent_data[ENT_DATA_SIZE];
 
+//An array of strings that an entity can store
+//.entity ent_strings[64];
 
+//An array of entities that an entity can store
+//.entity ent_entities[64];
 
- 
+//Gib models for func_breakable
+.string gib1;
+.string gib2;
+.string gib3;
+.string gib4;
+
+//Essentially used as a pass-in value for when one entity targets another.
+.float target_mod;
+
  

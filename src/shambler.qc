@@ -91,8 +91,7 @@ void() sham_smash7     =[      $smash7,       sham_smash8    ] {ai_charge(0);};
 void() sham_smash8     =[      $smash8,       sham_smash9    ] {ai_charge(0);};
 void() sham_smash9     =[      $smash9,       sham_smash10   ] {ai_charge(0);};
 void() sham_smash10    =[      $smash10,      sham_smash11   ] {
-local vector	delta;
-local float 	ldmg;
+	local vector	delta;
 
 	if (!self.enemy)
 		return;
@@ -104,9 +103,8 @@ local float 	ldmg;
 		return;
 	if (!CanDamage (self.enemy, self))
 		return;
-		
-	ldmg = (random() + random() + random()) * 40;
-	T_Damage (self.enemy, self, self, ldmg);
+	
+	T_Damage (self.enemy, self, self, 60);
 	sound (self, CHAN_VOICE, "shambler/smack.wav", 1, ATTN_NORM);
 
 	SpawnMeatSpray (self.origin + v_forward*16, crandom() * 100 * v_right);
@@ -120,7 +118,6 @@ void() sham_swingr1;
 void(float side) ShamClaw =
 {
 local vector	delta;
-local float 	ldmg;
 
 	if (!self.enemy)
 		return;
@@ -131,8 +128,7 @@ local float 	ldmg;
 	if (vlen(delta) > 100)
 		return;
 		
-	ldmg = (random() + random() + random()) * 20;
-	T_Damage (self.enemy, self, self, ldmg);
+	T_Damage (self.enemy, self, self, 30);
 	sound (self, CHAN_VOICE, "shambler/smack.wav", 1, ATTN_NORM);
 
 	if (side)
@@ -386,3 +382,65 @@ void() monster_shambler =
 	
 	walkmonster_start();
 };
+
+
+
+/*
+===========
+ShamCheckAttack
+
+The player is in view, so decide to move or launch an attack
+Returns FALSE if movement should continue
+============
+*/
+float() ShamCheckAttack =
+{
+	local vector	spot1, spot2;	
+	local entity	targ;
+	//local float		chance;
+
+	if (enemy_range == RANGE_MELEE)
+	{
+		if (CanDamage (self.enemy, self))
+		{
+			self.attack_state = AS_MELEE;
+			return TRUE;
+		}
+	}
+
+	if (time < self.attack_finished)
+		return FALSE;
+	
+	if (!enemy_vis)
+		return FALSE;
+		
+	targ = self.enemy;
+	
+// see if any entities are in the way of the shot
+	spot1 = self.origin + self.view_ofs;
+	spot2 = targ.origin + targ.view_ofs;
+
+	if (vlen(spot1 - spot2) > 600)
+		return FALSE;
+
+	traceline (spot1, spot2, FALSE, self);
+
+	if (trace_inopen && trace_inwater)
+		return FALSE;			// sight line crossed contents
+
+	if (trace_ent != targ)
+	{
+		return FALSE;	// don't have a clear shot
+	}
+			
+// missile attack
+	if (enemy_range == RANGE_FAR)
+		return FALSE;
+		
+	self.attack_state = AS_MISSILE;
+	SUB_AttackFinished (2 + 2*random());
+	return TRUE;
+};
+
+//============================================================================
+

@@ -52,9 +52,7 @@ float(entity target) revive = {
 		if (walkmove (0, 0)) {
 			self.takedamage = DAMAGE_AIM;
 			total_monsters = total_monsters + 1;
-			WriteByte(MSG_ALL, 3/*SVC_UPDATESTAT*/);
-			WriteByte(MSG_ALL, 12/*STAT_TOTALMONSTERS*/);
-			WriteLong(MSG_ALL, total_monsters);
+			update_monsters();
 			self.th_revive();
 			self = oldself;
 			return 1;
@@ -78,8 +76,6 @@ enemy as activator.
 */
 void() monster_death_use =
 {
-	local entity 	ent, otemp, stemp;
-
 // fall to ground
 	if (self.flags & FL_FLY)
 		self.flags = self.flags - FL_FLY;
@@ -98,9 +94,6 @@ void() monster_death_use =
 
 void() walkmonster_start_go =
 {
-local string	stemp;
-local entity	etemp;
-
 	self.origin_z = self.origin_z + 1;	// raise off floor a bit
 	droptofloor();
 	

@@ -16,6 +16,8 @@ doors.qc
 buttons.qc
 triggers.qc
 plats.qc
+effect.qc
+filters.qc
 misc.qc
 
 ogre.qc
@@ -37,5 +39,5 @@ oldone.qc		// registered
 
 lostsoul.qc		// bulletride
 crucifix.qc		// bulletride
-//maze.qc		// bulletride
+maze.qc			// bulletride
 hellboard.qc	// bulletride

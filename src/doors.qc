@@ -1,9 +1,10 @@
 
-float DOOR_START_OPEN = 1;
-float DOOR_DONT_LINK = 4;
-float DOOR_GOLD_KEY = 8;
-float DOOR_SILVER_KEY = 16;
-float DOOR_TOGGLE = 32;
+#define DOOR_START_OPEN 1
+#define DOOR_DONT_LINK 4
+#define DOOR_GOLD_KEY 8
+#define DOOR_SILVER_KEY 16
+#define DOOR_TOGGLE 32
+#define DOOR_SETTABLE 64
 
 /*
 
@@ -49,7 +50,7 @@ void() door_hit_top =
 {
 	sound (self, CHAN_VOICE, self.noise1, 1, ATTN_NORM);
 	self.state = STATE_TOP;
-	if (self.spawnflags & DOOR_TOGGLE)
+	if (self.spawnflags & DOOR_TOGGLE || self.spawnflags & DOOR_SETTABLE)
 		return;		// don't come down automatically
 	self.think = door_go_down;
 	self.nextthink = self.ltime + self.wait;
@@ -116,8 +117,10 @@ void() door_fire =
 
 	self.message = string_null;		// no more message
 	oself = self;
-
-	if (self.spawnflags & DOOR_TOGGLE)
+	
+	//If the door is toggleable and it's in the up state, make it go down instead.
+	//If the door is settable, the target_mod is 0, and the door is in its up state, also make it go down.
+	if (self.spawnflags & DOOR_TOGGLE || ((self.spawnflags & DOOR_SETTABLE) && other.target_mod == 0))
 	{
 		if (self.state == STATE_UP || self.state == STATE_TOP)
 		{
@@ -132,6 +135,10 @@ void() door_fire =
 		}
 	}
 	
+	//If the door is settable, but it's trying to set it to go down, don't make it go up.
+	if ((self.spawnflags & DOOR_SETTABLE) && other.target_mod == 0) {
+		return;
+	}
 // trigger all paired doors
 	starte = self;
 	do
@@ -348,7 +355,7 @@ void() LinkDoors =
 
 	if (self.enemy)
 		return;		// already linked by another door
-	if (self.spawnflags & 4)
+	if (self.spawnflags & DOOR_DONT_LINK)
 	{
 		self.owner = self.enemy = self;
 		return;		// don't want to link this door
@@ -608,7 +615,7 @@ void () fd_secret_use =
 	
 	if (!(self.spawnflags & SECRET_NO_SHOOT))
 	{
-		self.th_pain = SUB_Null;
+		self.th_pain = __NULL__;
 		self.takedamage = DAMAGE_NO;
 	}
 	self.velocity = '0 0 0';
@@ -695,7 +702,7 @@ void () fd_secret_done =
 	{
 		self.health = 10000;
 		self.takedamage = DAMAGE_YES;
-		self.th_pain = fd_secret_use;	
+		self.th_pain = (void(entity,float))fd_secret_use;	
 	}
 	sound(self, CHAN_VOICE, self.noise3, 1, ATTN_NORM);
 };
@@ -799,7 +806,7 @@ void () func_door_secret =
 	{
 		self.health = 10000;
 		self.takedamage = DAMAGE_YES;
-		self.th_pain = fd_secret_use;
+		self.th_pain = (void(entity,float))fd_secret_use;
 		self.th_die = fd_secret_use;
 	}
 	self.oldorigin = self.origin;

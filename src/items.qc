@@ -103,8 +103,8 @@ rot you down to your maximum health limit,
 one point per second.
 */
 
-float	H_ROTTEN = 1;
-float	H_MEGA = 2;
+#define	H_ROTTEN 1
+#define	H_MEGA 2
 .float	healamount, healtype;
 void() health_touch;
 void() item_megahealth_rot;
@@ -149,7 +149,7 @@ void() item_health =
 
 void() health_touch =
 {
-	local	float amount;
+	//local	float amount;
 	local	string	s;
 	
 	if (other.classname != "player")
@@ -184,10 +184,14 @@ void() health_touch =
 	// Megahealth = rot down the player's super health
 	if (self.healtype == 2)
 	{
-		other.items = other.items | IT_SUPERHEALTH;
-		self.nextthink = time + 5;
-		self.think = item_megahealth_rot;
-		self.owner = other;
+		//Don't rot the player if they are already rotting
+		if (!(other.items & IT_SUPERHEALTH)) {
+			other.items = other.items | IT_SUPERHEALTH;
+			self.nextthink = time + 5;
+			
+			self.think = item_megahealth_rot;
+			self.owner = other;
+		}
 	}
 	else
 	{
@@ -457,14 +461,14 @@ void() weapon_touch =
 		new = IT_SUPER_SHOTGUN;
 		other.ammo_shells = other.ammo_shells + 10;
 	}
-	else if (self.classname == "weapon_supershotgun2")
+	else if (self.classname == "weapon_flamethrower")
 	{
 		if (leave && (other.items & IT_SUPER_SHOTGUN) )
 			return;
 		hadammo = other.ammo_rockets;			
 		new = IT_SUPER_SHOTGUN;
 		other.items2 = other.items2 | IT_SUPER_SHOTGUN;
-		other.ammo_shells = other.ammo_shells + 25;
+		other.ammo_shells = other.ammo_cells + 25;
 	}
 	else if (self.classname == "weapon_rocketlauncher")
 	{
@@ -549,12 +553,12 @@ void() weapon_supershotgun =
 	StartItem ();
 };
 
-void() weapon_supershotgun2 =
+void() weapon_flamethrower =
 {
-	precache_model ("progs/g_shot3.mdl");
-	setmodel (self, "progs/g_shot3.mdl");
+	precache_model ("progs/g_shot1.mdl");
+	setmodel (self, "progs/g_shot1.mdl");
 	self.weapon = IT_SUPER_SHOTGUN;
-	self.netname = "Super Shotgun";
+	self.netname = "Flamethrower";
 	self.touch = weapon_touch;
 	setsize (self, '-16 -16 0', '16 16 56');
 	StartItem ();
@@ -945,46 +949,64 @@ KEYS
 ===============================================================================
 */
 
-void() key_touch =
-{
-local entity	stemp;
-local float		best;
-
-	if (other.classname != "player")
+void(entity e) key_give = {
+	if (e.classname != "player")
 		return;
-	if (other.health <= 0)
+	if (e.health <= 0)
 		return;
-	if ((other.items & self.items) && (coop))
+	if ((e.items & self.items) && (coop))
 		return;
-
-	sprint (other, "You got the ");
-	sprint (other, self.netname);
-	sprint (other,"\n");
-
-	sound (other, CHAN_ITEM, self.noise, 1, ATTN_NORM);
-	stuffcmd (other, "bf\n");
-	other.items = other.items | self.items;
 	
-	if (self.classname = "item_key1") {
-		set_key(world.level_id,0);
+	if (e == activator) {
+		sprint (e, "You");
 	} else {
-		set_key(world.level_id,1);
+		sprint (e, activator.netname);
+	}
+	sprint (e, " got the ");
+	sprint (e, self.netname);
+	sprint (e," for this level\n");
+
+	sound (e, CHAN_ITEM, self.noise, 1, ATTN_NORM);
+	stuffcmd (e, "bf\n");
+	
+	if (self.classname == "item_key1") {
+		e.items = e.items | IT_KEY1;
+	} else {
+		e.items = e.items | IT_KEY2;
 	}
 	
+}
 
-	if (!coop)
-	{	
-		self.solid = SOLID_NOT;
-		self.model = string_null;
+void() key_touch = {
+	if (other.classname != "player") {
+		return;
 	}
+	
+	local entity t = world;
+	while (1) {
+		t = find(t, classname, "player");
+		if (t == world) {
+			break;
+		} else {
+			key_give(t);
+		}
+	}
+	
+	if (self.classname == "item_key1") {
+		set_key(world.level_id,0,1);
+	} else {
+		set_key(world.level_id,1,1);
+	}
+	
+	self.solid = SOLID_NOT;
+	self.model = string_null;
 
 	activator = other;
 	SUB_UseTargets();
 };
 
 
-void() key_setsounds =
-{
+void() key_setsounds = {
 	if (world.worldtype == 0)
 	{
 		precache_sound ("misc/medkey.wav");
@@ -1014,27 +1036,22 @@ following:
 */
 
 void() item_key1 = {	
-	if (world.worldtype == 0)
-	{
+	if (world.worldtype == 0) {
 		precache_model ("progs/w_s_key.mdl");
 		setmodel (self, "progs/w_s_key.mdl");
-		self.netname = "silver key for this level";
-	}
-	else if (world.worldtype == 1)
+		self.netname = "silver key";
+	} else if (world.worldtype == 1)
 	{
 		precache_model ("progs/m_s_key.mdl");
 		setmodel (self, "progs/m_s_key.mdl");
-		self.netname = "silver runekey for this level";
-	}
-	else if (world.worldtype == 2)
-	{
+		self.netname = "silver runekey";
+	} else {
 		precache_model2 ("progs/b_s_key.mdl");
 		setmodel (self, "progs/b_s_key.mdl");
-		self.netname = "silver keycard for this level";
+		self.netname = "silver keycard";
 	}
 	key_setsounds();
 	self.touch = key_touch;
-	self.items = IT_KEY1;
 	setsize (self, '-16 -16 -24', '16 16 32');
 	StartItem ();
 };
@@ -1051,23 +1068,18 @@ following:
 */
 
 void() item_key2 = {
-	if (world.worldtype == 0)
-	{
+	if (world.worldtype == 0) {
 		precache_model ("progs/w_g_key.mdl");
 		setmodel (self, "progs/w_g_key.mdl");
-		self.netname = "gold key for this level";
-	}
-	if (world.worldtype == 1)
-	{
+		self.netname = "gold key";
+	} else if (world.worldtype == 1) {
 		precache_model ("progs/m_g_key.mdl");
 		setmodel (self, "progs/m_g_key.mdl");
-		self.netname = "gold runekey for this level";
-	}
-	if (world.worldtype == 2)
-	{
+		self.netname = "gold runekey";
+	} else {
 		precache_model2 ("progs/b_g_key.mdl");
 		setmodel (self, "progs/b_g_key.mdl");
-		self.netname = "gold keycard for this level";
+		self.netname = "gold keycard";
 	}
 	key_setsounds();
 	self.touch = key_touch;
@@ -1088,9 +1100,6 @@ END OF LEVEL RUNES
 
 void() sigil_touch =
 {
-local entity	stemp;
-local float		best;
-
 	if (other.classname != "player")
 		return;
 	if (other.health <= 0)
@@ -1161,9 +1170,6 @@ void() powerup_touch;
 
 void() powerup_touch =
 {
-local entity	stemp;
-local float		best;
-
 	if (other.classname != "player")
 		return;
 	if (other.health <= 0)
@@ -1295,8 +1301,6 @@ void() item_artifact_super_damage =
 
 	precache_model ("progs/quaddama.mdl");
 	precache_sound ("items/damage.wav");
-	precache_sound ("items/damage2.wav");
-	precache_sound ("items/damage3.wav");
 	self.noise = "items/damage.wav";
 	setmodel (self, "progs/quaddama.mdl");
 	self.netname = "Quad Damage";
