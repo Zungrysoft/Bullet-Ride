@@ -1167,7 +1167,8 @@ void() item_rune = {
 		self.touch = rune_touch;
 	}
 	
-	setsize (self, '-8 -8 -24', '8 8 32');
+	setsize (self, '-16 -16 -24', '16 16 32');
+	//setsize (self, '-8 -8 -24', '8 8 32');
 	StartItem();
 };
 

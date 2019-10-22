@@ -5,6 +5,13 @@
 #define SOUTH 2
 #define WEST 3
 
+//File Description:
+/* Defines the misc_maze entity, which is used to control the state of walls in a randomly generated maze.
+The maze uses a modified version of the hunt-and-kill algorithm.
+The maze has multiple levels that let the maze open up periodically
+generate_level() is used to carve out a certain number of spaces 
+Designed specifically for use in The Dredge Arena*/
+
 //Stores the spaces of the maze
 //Each space is given the same index as the walls immediately south and east of it
 float maze_spaces[256];

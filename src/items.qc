@@ -789,7 +789,11 @@ void() item_shells =
 	}
 	self.weapon = 1;
 	self.netname = "shells";
-	setsize (self, '0 0 0', '32 32 56');
+	if (self.spawnflags & 1) {
+		setsize (self, '0 0 0', '32 32 24');
+	} else {
+		setsize (self, '0 0 0', '24 24 24');
+	}
 	StartItem ();
 };
 
@@ -814,7 +818,11 @@ void() item_spikes =
 	}
 	self.weapon = 2;
 	self.netname = "nails";
-	setsize (self, '0 0 0', '32 32 56');
+	if (self.spawnflags & 1) {
+		setsize (self, '0 0 0', '32 32 24');
+	} else {
+		setsize (self, '0 0 0', '24 24 24');
+	}
 	StartItem ();
 };
 
@@ -839,7 +847,11 @@ void() item_rockets =
 	}
 	self.weapon = 3;
 	self.netname = "rockets";
-	setsize (self, '0 0 0', '32 32 56');
+	if (self.spawnflags & 1) {
+		setsize (self, '0 0 0', '32 16 32');
+	} else {
+		setsize (self, '0 0 0', '16 16 32');
+	}
 	StartItem ();
 };
 
@@ -865,7 +877,11 @@ void() item_cells =
 	}
 	self.weapon = 4;
 	self.netname = "cells";
-	setsize (self, '0 0 0', '32 32 56');
+	if (self.spawnflags & 1) {
+		setsize (self, '0 0 0', '32 32 24');
+	} else {
+		setsize (self, '0 0 0', '24 24 24');
+	}
 	StartItem ();
 };
 

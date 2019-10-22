@@ -356,9 +356,6 @@ void() flame_think = {
 
 void() flame_touch = {
 	local float dmg;
-	if (other == self.owner) {
-		return;
-	}
 	if (other.health && other.takedamage) {
 		dmg = (7 - self.frame) * 3;
 		//bprint(ftos(dmg));

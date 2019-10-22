@@ -1,6 +1,9 @@
 //Code written by ZungryWare
 
 void() unlockitem_use = {
+	if (!get_specialflag(self.rune_id)) {
+		SUB_UseTargets();
+	}
 	set_specialflag(self.rune_id, 1);
 	ghostItems();
 }

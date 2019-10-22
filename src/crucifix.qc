@@ -10,12 +10,17 @@ void() crucifix_think;
 //Class initialization
 void() trap_crucifix = {
 	InitTrigger();
-	if (self.targetname) {
-		self.use = crucifix_think;
-	} else {
-		if (!self.wait) {
-			self.wait = 5;
+	self.use = crucifix_think;
+	if (!self.wait) {
+		if (cvar("skill") >= 2) {
+			self.wait = 4;
+		} else if (cvar("skill") >= 1) {
+			self.wait = 7;
+		} else {
+			self.wait = 10;
 		}
+	}
+	if (self.wait != -1) {
 		self.think = crucifix_think;
 		self.nextthink = time + self.wait;
 	}
@@ -43,23 +48,44 @@ void() crucifix_think = {
 			if (t.origin_x >= self.absmin_x && t.origin_x <= self.absmax_x) {
 				if (t.origin_y >= self.absmin_y && t.origin_y <= self.absmax_y) {
 					if (t.origin_z >= self.absmin_z && t.origin_z <= self.absmax_z) {
-						//Add it to the list
-						found[counter] = t;
-						counter ++;
+						//The crucifix shouldn't revive anything immediately
+						//Once it finds something to resurrect, it wakes up, then starts its resurrection cycle
+						if (self.count == 0) {
+							self.count = 1;
+							//Set the nextthink
+							if (self.wait != -1) {
+								self.nextthink = time + (self.wait / 3);
+							}
+							return;
+						} else {
+							//If the crucifix is already awake, add the monster to the list
+							found[counter] = t;
+							counter ++;
+						}
+						
+						
 					}
 				}
 			}
 		}
 	} while (t != world && counter < 8);
 	
-	//If it found at least one monster, revive one of them
-	if (counter != 0) {
+	
+	if (counter == 0) {
+		//If no monsters were found, set the crucifix to sleep mode
+		self.count = 0;
+		//Set the nextthink
+		if (self.wait != -1) {
+			self.nextthink = time + (self.wait / 5);
+		}
+	} else {
+		//If it found at least one monster, revive one of them
 		//Pick one from the list at random
 		choice = found[floor(random() * counter)];
 		
 		//Revive the monster
-		//If the monster was successfully revived, play a lightning effect
 		if (revive(choice)) {
+			//If the monster was successfully revived, play a lightning effect
 			//Make sure it has a target before attempting to cast lightning
 			if (self.target) {
 				src = find(world, targetname, self.target);
@@ -75,13 +101,16 @@ void() crucifix_think = {
 					WriteCoord (MSG_BROADCAST, choice.origin_x);
 					WriteCoord (MSG_BROADCAST, choice.origin_y);
 					WriteCoord (MSG_BROADCAST, choice.origin_z);
+					
+					//Lightning sound
+					sound (self, CHAN_WEAPON, "weapons/lhit.wav", 1, ATTN_NORM);
 				}
 			}
 		}
-	}
-	
-	//Set the nextthink
-	if (!self.targetname) {
-		self.nextthink = time + self.wait;
+		//Set the nextthink
+		//Use the full duration if a monster was found
+		if (self.wait != -1) {
+			self.nextthink = time + self.wait;
+		}
 	}
 }

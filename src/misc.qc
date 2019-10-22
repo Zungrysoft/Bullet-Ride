@@ -121,9 +121,32 @@ void() light_torch_small_walltorch =
 {
 	precache_model ("progs/flame.mdl");
 	setmodel (self, "progs/flame.mdl");
-	FireAmbient ();
+	FireAmbient();
 	makestatic (self);
 };
+
+void() torch_use = {
+	if (self.alpha != -1) {
+		self.alpha = -1;
+		ambientsound (self.origin, string_null, 0.5, ATTN_STATIC);
+	} else {
+		self.alpha = 1;
+		ambientsound (self.origin, "ambience/fire1.wav", 0.5, ATTN_STATIC);
+	}
+}
+
+void() misc_flame_switchable = {
+	precache_model ("progs/flame2.mdl");
+	setmodel (self, "progs/flame2.mdl");
+	FireAmbient();
+	self.use = torch_use;
+	if (self.spawnflags & 1) {
+		torch_use();
+	}
+	if (self.spawnflags & 2) {
+		self.frame = 1;
+	}
+}
 
 /*QUAKED light_flame_large_yellow (0 1 0) (-10 -10 -12) (12 12 18)
 Large yellow flame ball
@@ -133,7 +156,7 @@ void() light_flame_large_yellow =
 	precache_model ("progs/flame2.mdl");
 	setmodel (self, "progs/flame2.mdl");
 	self.frame = 1;
-	FireAmbient ();
+	FireAmbient();
 	makestatic (self);
 };
 
@@ -144,7 +167,7 @@ void() light_flame_small_yellow =
 {
 	precache_model ("progs/flame2.mdl");
 	setmodel (self, "progs/flame2.mdl");
-	FireAmbient ();
+	FireAmbient();
 	makestatic (self);
 };
 
@@ -153,10 +176,7 @@ Small white flame ball
 */
 void() light_flame_small_white =
 {
-	precache_model ("progs/flame2.mdl");
-	setmodel (self, "progs/flame2.mdl");
-	FireAmbient ();
-	makestatic (self);
+	light_flame_small_yellow();
 };
 
 //============================================================================
@@ -850,8 +870,13 @@ void() breakable_die = {
 }
 
 void() breakable_use = {
-	self.takedamage = DAMAGE_YES;
-	T_Damage(self,self,self,100);
+	self.takedamage = DAMAGE_AIM;
+	if (other.classname == "func_breakable") {
+		//For multi-part breakables (breakables that target each other when they die) all parts should use the same gib speed.
+		T_Damage(self,self,self,self.health - other.health);
+	} else {
+		T_Damage(self,self,self,100);
+	}
 }
 
 void() func_breakable = {
@@ -877,7 +902,7 @@ void() func_breakable = {
 	}
 	
 	if (!(self.spawnflags & 1)) {
-		self.takedamage = DAMAGE_YES;
+		self.takedamage = DAMAGE_AIM;
 	}
 	if (self.count == 0) {
 		volume = (self.absmax_x - self.absmin_x) * (self.absmax_y - self.absmin_y) * (self.absmax_z - self.absmin_z);
