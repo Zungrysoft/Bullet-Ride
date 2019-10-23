@@ -12,7 +12,7 @@ Installation
 ------------
 1) Extract bulletride_a2.zip
 2) Copy the "bulletride" folder into your Quake directory
-3) Create a shortcut in the Quoffee folder to your preferred Quake engine
+3) Create a shortcut in the bulletride folder to your preferred Quake engine
 4) Edit the shortcut and add the following to the end of the file path:
 
  -game bulletride
