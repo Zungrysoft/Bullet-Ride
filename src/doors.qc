@@ -179,11 +179,11 @@ void() door_trigger_touch =
 	self = self.owner;
 	
 	//Rune checking
-	if (self.rune_count) {
+	if (self.rune_id) {
 		if (other.classname != "player") {
 			return;
 		}
-		if (count_runes() < self.rune_count) {
+		if (count_runes() < self.rune_id) {
 			return;
 		}
 	}
@@ -227,22 +227,17 @@ void() door_touch =
 		sound (other, CHAN_VOICE, "misc/talk.wav", 1, ATTN_NORM);
 	}
 	
-	if (!self.items && !self.rune_count)
+	if (!self.items && !self.rune_id)
 		return;
 	
 	//Rune checking
-	if (self.rune_count) {
+	if (self.rune_id) {
 		if (other.classname != "player") {
 			return;
 		}
-		if (count_runes() < self.rune_count) {
-			if (self.fail_message) {
-				centerprint (other, self.fail_message);
-				sound (self, CHAN_VOICE, self.noise3, 1, ATTN_NORM);
-			} else {
-				centerprint (other, "You need more runes to open this door.");
-				sound (self, CHAN_VOICE, self.noise3, 1, ATTN_NORM);
-			}
+		if (count_runes() < self.rune_id) {
+			threeprint (other, "You need ", ftos(self.rune_id), " runes to open this door");
+			sound (self, CHAN_VOICE, self.noise3, 1, ATTN_NORM);
 			return;
 		}
 	}

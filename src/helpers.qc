@@ -46,7 +46,9 @@ float (float level, float rune, float value) set_runeflag = {
 	
 	float before = runeflags[level];
 	if (value == 0) {
-		runeflags[level] = runeflags[level] & (~chosenbit);
+		if (runeflags[level] & chosenbit) {
+			runeflags[level] = runeflags[level] - chosenbit;
+		}
 	} else {
 		runeflags[level] = runeflags[level] | chosenbit;
 	}
@@ -76,12 +78,15 @@ float (float level, float rune) get_runeflag = {
 	float chosenbit = 1;
 	chosenbit = bshift_left(chosenbit, rune);
 	
-	return runeflags[level] & chosenbit;
+	if (runeflags[level] & chosenbit) {
+		return 1;
+	}
+	return 0;
 };
 
 //Sets whether a player has a rune or not.
 float (float level, float rune, float value) set_rune = {
-	if (level > NUMLEVELS-1 || level < 0) {
+	if (level >= NUMLEVELS || level < 0) {
 		bprint("[Error] set_rune function expects a level value between 0 and ");
 		bprint(ftos(NUMLEVELS-1));
 		bprint(". Received a value of ");
@@ -89,7 +94,7 @@ float (float level, float rune, float value) set_rune = {
 		bprint(".\n");
 		return 0;
 	}
-	if (rune > RUNESPERLEVEL - 1 || rune < 0) {
+	if (rune >= RUNESPERLEVEL || rune < 0) {
 		bprint("[Error] set_rune function expects a rune value between 0 and ");
 		bprint(ftos(RUNESPERLEVEL-1));
 		bprint(". Received a value of ");
@@ -102,7 +107,7 @@ float (float level, float rune, float value) set_rune = {
 
 //Gets whether the player has a rune
 float (float level, float rune) get_rune = {
-	if (level > NUMLEVELS-1 || level < 0) {
+	if (level >= NUMLEVELS || level < 0) {
 		bprint("[Error] get_rune function expects a level value between 0 and ");
 		bprint(ftos(NUMLEVELS-1));
 		bprint(". Received a value of ");
@@ -110,7 +115,7 @@ float (float level, float rune) get_rune = {
 		bprint(".\n");
 		return 0;
 	}
-	if (rune > RUNESPERLEVEL - 1 || rune < 0) {
+	if (rune >= RUNESPERLEVEL || rune < 0) {
 		bprint("[Error] get_rune function expects a rune value between 0 and ");
 		bprint(ftos(RUNESPERLEVEL-1));
 		bprint(". Received a value of ");
@@ -238,11 +243,33 @@ void() update_monsters = {
 	WriteLong(MSG_ALL, killed_monsters);
 }
 
+//Debug function for printing out a float in binary.
+void(float num) print_bits= {
+	for (float i = 23; i >= 0; i --) {
+		if (num & bshift_left(1, i)) {
+			bprint("1");
+		} else {
+			bprint("0");
+		}
+	}
+	bprint("\n");
+}
+
 void() debugFunc = {
 	//bprint(ftos(time));
 	//bprint("\n");
-	centerprint(nextent(world),"ERROR\n-----\nYou have installed\nthis mod incorrectly!!\n-----\nPlease read the readme file\nfor more information.");
+	//centerprint(nextent(world),"ERROR\n-----\nYou have installed\nthis mod incorrectly!!\n-----\nPlease read the readme file\nfor more information.");
+	//print_bits(2);
+	
+	/*for (float i = 0; i < 8; i ++) {
+		set_rune(14, i, 1);
+	}*/
+	
+	print_bits(runeflags[14]);
+	centerprint(nextent(world),ftos(get_runeflag(14,1)));
 }
+
+
 
 void(float index, float val) set_ent_data = {
 	if (index < 0 || index > (ENT_DATA_SIZE * 23)) {

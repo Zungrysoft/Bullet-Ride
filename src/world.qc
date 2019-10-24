@@ -343,7 +343,7 @@ void() worldspawn =
 	// 63 testing
 	lightstyle(63, "a");
 	
-	if (world.level_id > NUMTOTALLEVELS-1 || world.level_id < 0) {
+	if (world.level_id >= NUMTOTALLEVELS || world.level_id < 0) {
 		bprint("[Error] The worldspawn should have a level_id of between 0 and ");
 		bprint(ftos(NUMTOTALLEVELS-1));
 		bprint(".\n");

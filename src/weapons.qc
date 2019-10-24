@@ -263,8 +263,11 @@ void(float shotcount, vector dir, vector spread) FireBullets =
 	while (shotcount > 0)
 	{
 		direction = dir + crandom()*spread_x*v_right + crandom()*spread_y*v_up;
-
-		traceline (src, src + direction*2048, FALSE, self);
+		if (self.classname == "player") {
+			traceline (src, src + direction*2048, FALSE, self);
+		} else {
+			traceline (src, src + direction*300, FALSE, self);
+		}
 		if (trace_fraction != 1.0)
 			TraceAttack (4, direction);
 

@@ -512,7 +512,7 @@ void() weapon_touch =
 	
 	stemp = self;
 	self = other;
-
+	
 	if (!(cvar("temp1") & 1)) {
 		if (!deathmatch)
 			self.weapon = new;

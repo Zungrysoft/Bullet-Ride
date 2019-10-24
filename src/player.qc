@@ -600,7 +600,6 @@ void() PlayerDie =
 	}
 	
 	i = 0;
-	//i = cvar("temp1");
 	if (!i)
 		i = 1 + floor(random()*6);
 	

@@ -5,7 +5,7 @@ void() unlockitem_use = {
 		SUB_UseTargets();
 	}
 	set_specialflag(self.rune_id, 1);
-	ghostItems();
+	ghostWeapons();
 }
 
 void() effect_unlockitem = {
@@ -156,7 +156,8 @@ void() effect_missionlist = {
 	self.count = self.topMission;
 };
 
-void() hint_use = {
+//Changed to trigger_hint in triggers.qc
+/*void() hint_use = {
 	float i = 0;
 	while (i < 16) {
 		if (!get_rune(self.level_id, i)) {
@@ -200,7 +201,7 @@ void() effect_hint = {
 	self.missions[13] = self.mission13;
 	self.missions[14] = self.mission14;
 	self.missions[15] = self.mission15;
-};
+};*/
 
 void() effect_progressionbit_use = {
 	local float bitSet;

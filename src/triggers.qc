@@ -339,15 +339,11 @@ void() teleport_touch =
 			return;
 	}
 
-// only teleport living creatures
-	if (other.health <= 0 || other.solid != SOLID_SLIDEBOX) {
-		return;
+// only teleport living creatures and runes
+	if ((other.health > 0 && other.solid == SOLID_SLIDEBOX) || other.classname == "item_rune") {
+		SUB_UseTargets();
+		teleport_object(other, self.target, 0);
 	}
-	
-	
-	
-	SUB_UseTargets();
-	teleport_object(other, self.target, 0);
 };
 
 /*QUAKED info_teleport_destination (.5 .5 .5) (-8 -8 -8) (8 8 32)
@@ -511,13 +507,13 @@ void() trigger_hurt =
 
 //============================================================================
 
-float PUSH_ONCE = 1;
-float TWO_WAY = 2;
-float START_DISABLED = 4;
+#define PUSH_ONCE 1
+#define TWO_WAY 2
+#define DISABLED 4
 
 void() trigger_push_touch =
 {
-	if (self.enabled == 0) {
+	if (self.spawnflags & DISABLED) {
 		return;
 	}
 	if (other.classname == "grenade")
@@ -544,10 +540,10 @@ void() trigger_push_use =
 	if (self.spawnflags & TWO_WAY) {
 		self.speed = self.speed * -1;
 	} else {
-		if (self.enabled) {
-			self.enabled = 0;
+		if (self.spawnflags & DISABLED) {
+			self.spawnflags = self.spawnflags - DISABLED;
 		} else {
-			self.enabled = 1;
+			self.spawnflags = self.spawnflags | DISABLED;
 		}
 	}
 };
@@ -560,11 +556,6 @@ void() trigger_push =
 {
 	InitTrigger ();
 	precache_sound ("ambience/windfly.wav");
-	if (self.spawnflags & START_DISABLED) {
-		self.enabled = 0;
-	} else {
-		self.enabled = 1;
-	}
 	
 	if (!self.speed)
 		self.speed = 1000;
@@ -631,6 +622,147 @@ void() trigger_honey = {
 	self.touch = honey_touch;
 }
 
+void() hint_message = {
+	float i = 0;
+	while (i < 16) {
+		if (!get_rune(self.owner.level_id, i)) {
+			break;
+		}
+		i ++;
+	}
+	if (!self.owner.missions[i]) {
+		return;
+	}
+	threeprint(self.enemy,self.owner.message,"\n---\n", self.owner.missions[i]);
+	sound (self.enemy, CHAN_VOICE, "misc/talk.wav", 1, ATTN_NORM);
+}
+
+void() hint_touch = {
+	if (self.count >= ENT_DATA_SIZE*23) {
+		return;
+	}
+	if (other.classname != "player") {
+		return;
+	}
+	
+	//Figure out which edict the player is
+	entity t = world;
+	float c = 0;
+	do {
+		t = nextent(t);
+		c ++;
+		if (other == t) {
+			break;
+		}
+	} while (t != world && c < 16);
+	
+	
+	if (get_ent_data(c)) {
+		//If the value at the player's edict is 1, then they have already been selected
+		return;
+	} else {
+		//If the value is 0, then set it so they have been selected.
+		set_ent_data(c, 1);
+		if (self.delay) {
+			// create a temp object to fire at a later time
+			t = spawn();
+			t.classname = "DelayedHint";
+			t.nextthink = time + .5;
+			t.think = hint_message;
+			t.owner = self;
+			t.enemy = other;
+			return;
+		}
+	}
+}
+
+void() trigger_hint = {
+	if (!self.mission0) {
+		return;
+	}
+	precache_sound ("misc/talk.wav");
+	self.noise = "misc/talk.wav";
+	self.touch = hint_touch;
+	
+	if (!self.level_id) {
+		self.level_id = world.level_id;
+	}
+	if (!self.message) {
+		self.message = world.message;
+	}
+	
+	self.missions[0] = self.mission0;
+	self.missions[1] = self.mission1;
+	self.missions[2] = self.mission2;
+	self.missions[3] = self.mission3;
+	self.missions[4] = self.mission4;
+	self.missions[5] = self.mission5;
+	self.missions[6] = self.mission6;
+	self.missions[7] = self.mission7;
+	self.missions[8] = self.mission8;
+	self.missions[9] = self.mission9;
+	self.missions[10] = self.mission10;
+	self.missions[11] = self.mission11;
+	self.missions[12] = self.mission12;
+	self.missions[13] = self.mission13;
+	self.missions[14] = self.mission14;
+	self.missions[15] = self.mission15;
+	
+	InitTrigger();
+};
+
+void() levelstatus_use = {
+	if (self.spawnflags & 1) {
+		self.spawnflags = self.spawnflags - 1;
+	} else {
+		self.spawnflags = self.spawnflags | 1;
+	}
+}
+
+void() levelstatus_touch = {
+	if (self.spawnflags & 1) {
+		return;
+	}
+	
+	if (other.classname != "player") {
+		return;
+	}
+	
+	if (self.movedir != '0 0 0') {
+		makevectors (other.angles);
+		if (v_forward * self.movedir < 0)
+			return;		// not facing the right way
+	}
+	
+	if (time < self.nextthink) {
+		return;
+	} else {
+		self.think = SUB_Null;
+		self.nextthink = time + self.wait;
+	}
+	if (count_level_runes(self.level_id) >= self.count) {
+		sixprint (activator, self.message, "\n---\n", ftos(count_level_runes(self.level_id)), "/", ftos(self.count), " Runes!");
+	} else {
+		sixprint (activator, self.message, "\n---\n", ftos(count_level_runes(self.level_id)), "/", ftos(self.count), " Runes");
+	}
+	sound (activator, CHAN_VOICE, "misc/talk.wav", 1, ATTN_NORM);
+}
+
+void() trigger_levelstatus = {
+	if (!self.wait) {
+		self.wait = 1.8;
+	}
+	if (!self.message) {
+		self.message = world.message;
+	}
+	
+	precache_sound ("misc/talk.wav");
+	self.noise = "misc/talk.wav";
+	self.touch = levelstatus_touch;
+	self.use = levelstatus_use;
+	
+	InitTrigger();
+};
 
 
 

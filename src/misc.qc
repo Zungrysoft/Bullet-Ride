@@ -126,18 +126,20 @@ void() light_torch_small_walltorch =
 };
 
 void() torch_use = {
-	if (self.alpha != -1) {
-		self.alpha = -1;
-		ambientsound (self.origin, string_null, 0.5, ATTN_STATIC);
-	} else {
-		self.alpha = 1;
+	if (self.model == string_null) {
+		self.model = "progs/flame2.mdl";
 		ambientsound (self.origin, "ambience/fire1.wav", 0.5, ATTN_STATIC);
+	} else {
+		self.model = string_null;
+		ambientsound (self.origin, string_null, 0.5, ATTN_STATIC);
 	}
+	setmodel(self, self.model);
 }
 
 void() misc_flame_switchable = {
 	precache_model ("progs/flame2.mdl");
-	setmodel (self, "progs/flame2.mdl");
+	self.model = "progs/flame2.mdl";
+	setmodel(self, self.model);
 	FireAmbient();
 	self.use = torch_use;
 	if (self.spawnflags & 1) {

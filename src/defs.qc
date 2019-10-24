@@ -654,7 +654,9 @@ void(string s) changelevel = #70;
 
 void(string var, string val) cvar_set = #72;	// sets cvar.value
 
-void(entity client, string s) centerprint = #73;	// sprint, but in middle
+void(entity client, string s) centerprint = #73;	// sprint, but in the middle
+void(entity client, string s, string s2, string s3) threeprint = #73;
+void(entity client, string s, string s2, string s3, string s4, string s5, string s6) sixprint = #73;
 
 void(vector pos, string samp, float vol, float atten) ambientsound = #74;
 
@@ -716,12 +718,12 @@ float runefound;
 //So you can have 15 levels with 21 runes each.
 //Hopefully 315 runes isn't too harsh a limit for you.
 //It's 15 levels because the final index contains miscellaneous global data like weapon unlocks.
-float RUNESPERLEVEL = 21;
-float NUMLEVELS = 15;
+#define RUNESPERLEVEL 21
+#define NUMLEVELS 15
 float runeflags[16];
 
-//How many levels you can have total. Levels with level_id 15-31 are not regular levels and can only have secret runes in them.
-float NUMTOTALLEVELS = 32;
+//How many levels you can have total. Levels with level_id 15-63 are not regular levels and can only have secret runes in them.
+#define NUMTOTALLEVELS 64
 
 //Defines the alpha field for use in more modern engines
 //Does nothing in older engines
@@ -729,15 +731,6 @@ float NUMTOTALLEVELS = 32;
 
 //Defines the checkextension builtin.
 float(string s) checkextension = #99;
-
-//Used for doors that require a certain number of runes.
-.float rune_count;
-
-//The message that displays when the player fails to open a door.
-.string fail_message;
-
-//Whether the entity is enabled or not.
-.float enabled;
 
 //Used in worldspawn to set the gravity level.
 .float gravity;

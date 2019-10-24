@@ -51,11 +51,12 @@ void() SetChangeParms = {
 	parm13 = runeflags[12];
 	parm14 = runeflags[13];
 	parm15 = runeflags[14];
-	//Extra code is for setting most recent level.
-	parm16 = (runeflags[15] & ~(15)) | (world.level_id & 15);
+	//The bottom six bits will be set to the current level's level_id, so the start map will know what level the player is coming from.
+	//The other bits are set as normal.
+	parm16 = (runeflags[15] & ~(63)) | (world.level_id & 63);
 };
 
-//Unused, but here for compatibility reasons
+//Empty, but here for compatibility reasons
 void() SetNewParms =
 {};
 
@@ -66,13 +67,14 @@ void() ghostRunes = {
 		if (!t) {
 			break;
 		}
+		
 		if (t.spawnflags & 4) {
 			if (!get_rune(t.level_id, t.rune_id)) {
 				remove(t);
 			}
 		} else {
 			if (get_rune(t.level_id, t.rune_id)) {
-				t.alpha = .5;
+				t.alpha = .4;
 			}
 		}
 		
@@ -94,6 +96,19 @@ void(string checkclass, float checkid) ghostWeapon = {
 			t.touch = weapon_touch;
 		}
 	}
+}
+
+void() ghostWeapons = {
+	ghostWeapon("weapon_supershotgun", 6);
+	ghostWeapon("weapon_nailgun", 7);
+	ghostWeapon("weapon_supernailgun", 8);
+	ghostWeapon("weapon_grenadelauncher", 9);
+	ghostWeapon("weapon_rocketlauncher", 10);
+	ghostWeapon("weapon_lightning", 11);
+	ghostWeapon("weapon_railgun", 12);
+	ghostWeapon("weapon_flamethrower", 13);
+	ghostWeapon("weapon_bfg", 14);
+	ghostWeapon("weapon_shadowblade", 15);
 }
 
 void() ghostKeys = {
@@ -125,17 +140,7 @@ void() ghostKeys = {
 void() ghostItems = {
 	ghostRunes();
 	
-	/*ghostWeapon("weapon_shotgun", 5);
-	ghostWeapon("weapon_supershotgun", 6);
-	ghostWeapon("weapon_nailgun", 7);
-	ghostWeapon("weapon_supernailgun", 8);
-	ghostWeapon("weapon_grenadelauncher", 9);
-	ghostWeapon("weapon_rocketlauncher", 10);
-	ghostWeapon("weapon_lightning", 11);
-	ghostWeapon("weapon_railgun", 12);
-	ghostWeapon("weapon_flamethrower", 13);
-	ghostWeapon("weapon_bfg", 14);
-	ghostWeapon("weapon_shadowblade", 15);*/
+	//ghostWeapons();
 	
 	ghostKeys();
 }
@@ -159,7 +164,8 @@ void() DecodeLevelParms =
 	runeflags[14] |= parm15;
 	runeflags[15] |= parm16;
 	
-	SetNewParms();		
+	
+	SetNewParms();
 	
 	//Give starting items
 	if (world.items | world.items2 | world.ammo_shells | world.ammo_nails | world.ammo_rockets | world.ammo_cells) {
@@ -1251,57 +1257,39 @@ Returns the entity to spawn at
 entity() SelectSpawnPoint =
 {
 	local	entity spot;
-	local	entity thing;
-	local	float  pcount;
+	local 	float haslooped = 0;
 	
 	if (coop) {
 		if (mapname == "start" && get_specialflag(22)) {
+			//On start maps in coop when returning from a level, cycle through info_player_coop_return entities that match the previous level. 
+			//Do not select info_player_start entities, since the air tubes could have weird interactions with multiple players.
 			while(1) {
 				lastspawn = find(lastspawn, classname, "info_player_coop_return");
 				if (!lastspawn) {
-					break;
+					if (haslooped) {
+						//If it has looped through the entities a full time without finding any valid spawns, just spawn at the default info_player_start entity.
+						bprint("Error: Could not find proper spawn point. Going to default spawn.\n");
+						break;
+					}
+					haslooped = 1;
 				}
 				
-				if (lastspawn.level_id == (runeflags[15] & 31)) {
+				//Check if the info_player_start matches the previous level.
+				if (lastspawn.level_id == (runeflags[15] & 63)) {
 					return lastspawn;
 				}
 			}
 		} else {
+			//On non-start maps in coop, cycle through info_player_coop entities, end with info_player_start, then start over.
 			lastspawn = find(lastspawn, classname, "info_player_coop");
 			if (lastspawn) {
 				return lastspawn;
 			}
 		}
 	}
-	else if (deathmatch)
-	{
-		spot = lastspawn;
-		while (1)
-		{
-			spot = find(spot, classname, "info_player_deathmatch");
-			if (spot != world)
-			{
-				if (spot == lastspawn)
-					return lastspawn;
-				pcount = 0;
-				thing = findradius(spot.origin, 32);
-				while(thing)
-				{
-					if (thing.classname == "player")
-						pcount = pcount + 1;
-					thing = thing.chain;
-				}
-				if (pcount == 0)
-				{
-					lastspawn = spot;
-					return spot;
-				}
-			}
-		}
-	}
+	//No deathmatch support in this mod
 	
-	//If the map is start.bsp and the game has been started, the player should begin at a return point.
-	//If it hasn't been started yet, set the bit indicating the game has been started and go to a regular start point.
+	//On start maps in singleplayer when returning from a level, cycle through info_player_start_return entities that match the previous level. 
 	if (mapname == "start" && get_specialflag(22)) {
 		spot = world;
 		while(1) {
@@ -1310,12 +1298,14 @@ entity() SelectSpawnPoint =
 				break;
 			}
 			
+			//Check if the info_player_start matches the previous level.
 			if (spot.level_id == (runeflags[15] & 31)) {
 				return spot;
 			}
 		}
 	}
 	
+	//If it's a regular map or the game has just started, go to the regular info_player_start
 	spot = find (world, classname, "info_player_start");
 	
 	if (!spot) {

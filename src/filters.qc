@@ -27,7 +27,7 @@ void() filter_progressionbit = {
 }
 
 void() filter_onceperplayer_use = {
-	if (self.count >= 64) {
+	if (self.count >= ENT_DATA_SIZE*23) {
 		filter_output(0);
 		return;
 	}
@@ -96,3 +96,10 @@ void() filter_runecount = {
 	self.use = filter_runecount_use;
 }
 
+void() filter_newgame_use = {
+	filter_output(!get_specialflag(22));
+}
+
+void() filter_newgame = {
+	self.use = filter_newgame_use;
+}
