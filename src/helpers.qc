@@ -255,7 +255,7 @@ void(float num) print_bits= {
 	bprint("\n");
 }
 
-void() debugFunc = {
+void() debugFunc;
 	//bprint(ftos(time));
 	//bprint("\n");
 	//centerprint(nextent(world),"ERROR\n-----\nYou have installed\nthis mod incorrectly!!\n-----\nPlease read the readme file\nfor more information.");
@@ -265,9 +265,9 @@ void() debugFunc = {
 		set_rune(14, i, 1);
 	}*/
 	
-	print_bits(runeflags[14]);
-	centerprint(nextent(world),ftos(get_runeflag(14,1)));
-}
+	//print_bits(runeflags[14]);
+	//centerprint(nextent(world),ftos(get_runeflag(14,1)));
+//}
 
 
 

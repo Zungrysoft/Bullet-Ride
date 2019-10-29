@@ -698,6 +698,7 @@ float TE_BEAM=13;
 .float items2;
 
 //What id the current level is
+//Or what level id an entity refers to
 .float level_id;
 
 //This tells the level how many runes the world has in total
@@ -736,7 +737,7 @@ float(string s) checkextension = #99;
 .float gravity;
 
 //Used for scroll buttons to control the direction of the scroll.
-.float scroll_direction;
+//.float scroll_direction;
 //Store the message for each mission.
 .string mission0;
 .string mission1;
@@ -754,14 +755,13 @@ float(string s) checkextension = #99;
 .string mission13;
 .string mission14;
 .string mission15;
-.string mission16;
 .string missions[16];
 //The number of messages it has.
-.float topMission;
+//.float topMission;
 
 //Special properties of the world.
 .float world_properties;
-float HONEYSLIME = 1;
+#define HONEYSLIME 1
 
 //A function that can be called on monsters to revive them.
 float(entity target) revive;

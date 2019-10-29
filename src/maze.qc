@@ -5,6 +5,9 @@
 #define SOUTH 2
 #define WEST 3
 
+#define attempts gravity
+#define current_level global_rune_total
+
 //File Description:
 /* Defines the misc_maze entity, which is used to control the state of walls in a randomly generated maze.
 The maze uses a modified version of the hunt-and-kill algorithm.
@@ -38,16 +41,20 @@ void() update_maze_0;
 //Generates the maze the map starts with
 void() generate_maze;
 //Generates one level of the maze.
-void(float level, float num_spaces, float use_weight) generate_level;
+//level is the value to give the spaces that are generated.
+//num_spaces is number of spaces to generate.
+//weight_amt is the amount of weighting to add. -1 means don't use weighting.
+void(float level, float num_spaces, float weight_amt) generate_level;
 //Sets all of the maze's spaces and walls back to -1
 void() reset_maze;
-//Used for various targeting functions. target_mod is used to specify what to do
-//-1: Randomizes the maze
+//The maze's target function.
+//The target_mod of the activator is used to specify what to do.
+//-1: Re-randomizes the maze
 //0: Drops all maze walls
-//n: Drops maze walls of a specific value
+//n: Drops maze walls with values equal to and below n
 void() maze_use;
 //Gets the space in the specified direction
-//-1 means no valid space
+//A return value of -1 means it is a space outside the maze
 float(float space, float dir) get_space_to;
 //Picks a random valid empty space adjacent to the selected space
 //weight_space is a space the randomizer should be more likely to go towards
@@ -66,7 +73,6 @@ void(float dir, float level) build_space;
 //Gives values to the remaining walls
 //chance is the chance of giving a wall a number other than the maximum
 void(float chance, float max_level) set_leftover_walls;
-
 
 void() misc_maze = {
 	if (!self.maze_width) {
@@ -129,6 +135,32 @@ float(float space, float weight_space, float weight_amt) pick_direction = {
 		float greatest_value = 0;
 		float diff;
 		
+		/*float values[4];
+		float directions[4];
+		
+		values[0] = get_space_y(space) - get_space_y(weight_space);
+		directions[0] = 0;
+		values[1] = get_space_x(weight_space) - get_space_x(space);
+		directions[1] = 1;
+		values[2] = get_space_y(weight_space) - get_space_y(space);
+		directions[2] = 2;
+		values[3] = get_space_x(space) - get_space_x(weight_space);
+		directions[3] = 3;
+		
+		for (float i = 0; i < 4; i ++) {
+			for (float j = 0; j < 3; j ++) {
+				if (values[j] < values[j+1]) {
+					float swapper = values[j];
+					values[j] = values[j+1];
+					values[j+1] = swapper;
+					
+					swapper = directions[j];
+					directions[j] = directions[j+1];
+					directions[j+1] = swapper;
+				}
+			}
+		}*/
+		
 		//If the weight space has greater x value, it is to the EAST
 		diff = get_space_x(weight_space) - get_space_x(space);
 		if (diff > greatest_value) {
@@ -156,8 +188,10 @@ float(float space, float weight_space, float weight_amt) pick_direction = {
 			greatest_direction = NORTH;
 		}
 		
+		
 		//Make sure the tested space is a valid space
 		test_space = get_space_to(space, greatest_direction);
+		
 		if (test_space != -1) {
 			if (maze_spaces[test_space] == -1) {
 				return greatest_direction;
@@ -236,7 +270,7 @@ void(float dir, float level) build_space = {
 	self.current_space = other_space;
 }
 
-void(float level, float num_spaces, float use_weight) generate_level = {
+void(float level, float num_spaces, float weight_amt) generate_level = {
 	if (self.current_space < 0 || self.current_space >= maze_size) {
 		self.current_space = 0;
 	}
@@ -253,8 +287,8 @@ void(float level, float num_spaces, float use_weight) generate_level = {
 		//Determine the weight. The longer it's been generating, the larger the weight should be.
 		//Only use weight if enabled
 		float weight;
-		if (maze_spaces[self.exit_space] == 0 && use_weight) {
-			weight = gen / (num_spaces * .8);
+		if (maze_spaces[self.exit_space] == -1 && weight_amt != -1) {
+			weight = (gen / (num_spaces * 1.2)) + weight_amt;
 		} else {
 			weight = 0;
 		}
@@ -272,7 +306,7 @@ void(float level, float num_spaces, float use_weight) generate_level = {
 		
 		//If there are no valid adjacent spaces, hunt for a new random space to build off of
 		//In order to prevent passages from being too windy and linear, it sometimes do this at random
-		if (dir == -1 || random() < .1) {
+		if (dir == -1 || random() < .17) {
 			hunt_space();
 			//If a call to this function results in current_space being -1, then the maze is full
 			//So the while loop will end
@@ -284,57 +318,43 @@ void(float level, float num_spaces, float use_weight) generate_level = {
 	}
 }
 
-void(float ratio, float max_level) set_leftover_walls = {
-	float val1;
-	float val2;
-	float val_greater;
-	
-	for (float i = 0; i < maze_size; i ++) {
-		//Go through the vertical walls first
-		//The vertical walls closest to the EAST side of the maze don't exist, so skip them
-		if (mod(i, self.maze_width) != self.maze_width - 1) {
-			if (maze_walls_vert[i] == -1 && random() < ratio) {
-				val1 = maze_spaces[i];
-				val2 = maze_spaces[i+1];
-				val_greater = val1 > val2 ? val1 : val2;
-				maze_walls_vert[i] = floor(random_range(val_greater, max_level));
-			}
-		}
-		//Then go through the horizontal walls
-		//The horizontal walls closest to the SOUTH side of the maze don't exist, so skip them
-		if (i < maze_size - self.maze_width) {
-			if (maze_walls_horiz[i] == -1 && random() < ratio) {
-				
-				val1 = maze_spaces[i];
-				val2 = maze_spaces[i+self.maze_width];
-				val_greater = val1 > val2 ? val1 : val2;
-				maze_walls_horiz[i] = floor(random_range(val_greater, max_level));
-			}
-		}
-	}
-}
-
 void() generate_maze = {
+	//Set the nextthink
+	//It has to wait between generating levels, or the engine might falsely report a runaway loop error
+	self.think = generate_maze;
+	self.nextthink = time + .1;
+	
 	//Generate level 0
 	//Continue generating until the exit space has a level of 0
 	//If the exit space has a level of 0, that means it has been generated, which means there is a continuous path between the entrance and exit
-	float ctemp = self.current_space;
-	
-	while (maze_spaces[self.exit_space] != 0) {
+	if (self.current_level == 0) {
+		float ctemp = self.current_space;
+		
 		bprint("GENERATING LEVEL 0\n");
 		reset_maze();
-		bprint(ftos(maze_spaces[10]));
-		self.current_space = ctemp;
-		generate_level(0, random_range(maze_size/2, maze_size/3), 1);
+		generate_level(0, random_range(maze_size/2, maze_size/3), .2 * self.attempts);
+		self.attempts ++;
+		
+		if (maze_spaces[self.exit_space] != 0) {
+			//If the exit space wasn't generated, try again in .1 seconds
+			self.current_space = ctemp;
+		} else {
+			//Otherwise, continue on with the generating
+			self.current_level ++;
+		}
+	} else if (self.current_level <= 4) {
+		generate_level(self.current_level, maze_size/10, -1);
+		self.current_level ++;
+	} else if (self.current_level == 5) {
+		generate_level(self.current_level, maze_size, -1);
+		self.current_level ++;
+	} else if (self.current_level == 6) {
+		set_leftover_walls(.07, 5);
+		self.current_level ++;
+	} else {
+		update_maze(0);
+		self.think = SUB_Null;
 	}
-	
-	generate_level(1, maze_size/8, 0);
-	generate_level(2, maze_size/8, 0);
-	generate_level(3, maze_size/8, 0);
-	generate_level(4, maze_size/8, 0);
-	generate_level(5, maze_size, 0);
-	
-	set_leftover_walls(.07, 5);
 }
 
 void() maze_use = {
@@ -358,6 +378,37 @@ void() maze_use = {
 	} else {
 		//Default: update the maze to the selected level
 		update_maze(other.target_mod);
+	}
+}
+
+void(float ratio, float max_level) set_leftover_walls = {
+	float val1;
+	float val2;
+	float val_greater;
+	
+	for (float i = 0; i < maze_size; i ++) {
+		//Go through the vertical walls first
+		//The vertical walls closest to the EAST side of the maze don't exist, so skip them
+		if (get_space_to(i, EAST) != -1) {
+			if (maze_walls_vert[i] == -1 && random() < ratio) {
+				val1 = maze_spaces[i];
+				val2 = maze_spaces[i+1];
+				val_greater = val1 > val2 ? val1 : val2;
+				maze_walls_vert[i] = floor(random_range(val_greater, max_level));
+				bprint("LEFTOVER\n");
+			}
+		}
+		//Then go through the horizontal walls
+		//The horizontal walls closest to the SOUTH side of the maze don't exist, so skip them
+		if (get_space_to(i, SOUTH) != -1) {
+			if (maze_walls_horiz[i] == -1 && random() < ratio) {
+				val1 = maze_spaces[i];
+				val2 = maze_spaces[i+self.maze_width];
+				val_greater = val1 > val2 ? val1 : val2;
+				maze_walls_horiz[i] = floor(random_range(val_greater, max_level));
+				bprint("LEFTOVER\n");
+			}
+		}
 	}
 }
 
@@ -427,7 +478,16 @@ float(float space, float dir) get_space_to = {
 	return ret;
 }
 
-
+void() debugFunc = {
+	entity maze = find(world,classname,"misc_maze");
+	for (float i = 0; i < maze_size; i ++) {
+		bprint("Space ");
+		bprint(ftos(i));
+		bprint(": ");
+		bprint(ftos(maze_spaces[i]));
+		bprint("\n");
+	}
+}
 
 
 

@@ -102,7 +102,7 @@ void() effect_changemusic = {
 	self.use = changemusic_use;
 };
 
-void() missionlist_use = {
+/*void() missionlist_use = {
 	if (other.scroll_direction == 0) {
 		if (self.count == self.topMission) {
 			self.count = 0;
@@ -154,7 +154,7 @@ void() effect_missionlist = {
 		}
 	}
 	self.count = self.topMission;
-};
+};*/
 
 //Changed to trigger_hint in triggers.qc
 /*void() hint_use = {

@@ -237,6 +237,9 @@ entity() FindIntermission =
 string nextmap;
 void() GotoNextMap =
 {
+	//total_secrets = ;
+	
+	
 	if (cvar("samelevel"))	// if samelevel is set, stay on same level
 		changelevel (mapname);
 	else
