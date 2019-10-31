@@ -346,13 +346,19 @@ void()	Demon_JumpTouch =
 
 	if (self.health <= 0)
 		return;
-		
-	if (other.takedamage)
+	
+	if (other.takedamage) 
 	{
 		if ( vlen(self.velocity) > 400 )
 		{
-			ldmg = 40 + 10*random();
-			T_Damage (other, self, self, ldmg);	
+			//The fiend can't deal leap damage to the player immediately after already doing do.
+			//Solves some weird hit-detection issues where the fiend could insta-kill players or deal multiple hits at once.
+			if (self.count < time)
+			{
+				ldmg = 40 + 10*random();
+				T_Damage (other, self, self, ldmg);	
+			}
+			self.count = time + .3;
 		}
 	}
 
@@ -364,7 +370,7 @@ void()	Demon_JumpTouch =
 			self.think = demon1_jump1;
 			self.nextthink = time + 0.1;
 		}
-		//return;
+		return;
 	}
 
 	self.touch = SUB_Null;

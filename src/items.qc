@@ -5,10 +5,41 @@ BE .8 .3 .4 IN COLOR */
 
 void() SUB_regen =
 {
-	self.model = self.mdl;		// restore original model
-	self.solid = SOLID_TRIGGER;	// allow it to be touched again
-	sound (self, CHAN_VOICE, "items/itembk2.wav", 1, ATTN_NORM);	// play respawn sound
-	setorigin (self, self.origin);
+	float do_regen;
+	
+	//If the safety ammo spawnflag is enabled, only regen if the player is out of ammo.
+	if (self.spawnflags & 2) {
+		entity t = world;
+		while(1) {
+			t = find(t, classname, "player");
+			if (t) {
+				if (t.ammo_shells == 0 && t.ammo_nails == 0 && t.ammo_rockets == 0 && t.ammo_cells == 0) {
+					//If it finds a player who is entirely out of ammo, do the regen
+					do_regen = 1;
+					break;
+				}
+			} else {
+				//If it went through every player, don't do the regen.
+				do_regen = 0;
+				break;
+			}
+		}
+		
+	} else {
+		do_regen = 1;
+	}
+	
+	if (do_regen) {
+		self.model = self.mdl;		// restore original model
+		self.solid = SOLID_TRIGGER;	// allow it to be touched again
+		sound (self, CHAN_VOICE, "items/itembk2.wav", 1, ATTN_NORM);	// play respawn sound
+		setorigin (self, self.origin);
+	} else {
+		//If you don't do the regen, try again after some time.
+		self.think = SUB_regen;
+		self.nextthink = self.wait;
+	}
+	
 };
 
 
@@ -524,18 +555,20 @@ void() weapon_touch =
 
 	self = stemp;
 
-	if (leave)
-		return;
-
-// remove it in single player, or setup for respawning in deathmatch
-	self.model = string_null;
-	self.solid = SOLID_NOT;
-	if (deathmatch == 1)
-		self.nextthink = time + 30;
-	self.think = SUB_regen;
+	if (!leave) {
+		self.model = string_null;
+		self.solid = SOLID_NOT;
+		if (deathmatch == 1)
+			self.nextthink = time + 30;
+		self.think = SUB_regen;
+	}
 	
 	activator = other;
-	SUB_UseTargets();				// fire all targets / killtargets
+	SUB_UseTargets();
+	//Only fire
+	//This name helps to avoid the blank string engine bug
+	self.target = "__stoptargetting__";
+	self.killtarget = "__stoptargetting__";
 };
 
 
@@ -735,9 +768,9 @@ local float		best;
 	sound (other, CHAN_ITEM, "weapons/lock4.wav", 1, ATTN_NORM);
 	stuffcmd (other, "bf\n");
 
-// change to a better weapon if appropriate
-
-	if ( other.weapon == best )
+// change to a better weapon if appropriate\
+	//Don't change if you have the noswitch setting enabled
+	if (other.weapon == best && !(cvar("temp1") & 1))
 	{
 		stemp = self;
 		self = other;
@@ -755,8 +788,8 @@ local float		best;
 // remove it in single player, or setup for respawning in deathmatch
 	self.model = string_null;
 	self.solid = SOLID_NOT;
-	if (deathmatch == 1)
-		self.nextthink = time + 30;
+	if (self.wait)
+		self.nextthink = time + self.wait;
 	self.think = SUB_regen;
 
 	activator = other;
