@@ -245,9 +245,15 @@ void() train_wait =
 
 void() train_next =
 {
-	local entity	targ;
-
-	targ = find (world, targetname, self.target);
+	entity targ = world;
+	
+	do {
+		targ = find (targ, targetname, self.target);
+		if (!(targ.spawnflags & 1)) {
+			break;
+		}
+	} while (targ != world);
+	
 	self.target = targ.target;
 	if (!self.target)
 		objerror ("train_next: no next target");
@@ -260,10 +266,9 @@ void() train_next =
 };
 
 void() func_train_find =
-
 {
 	local entity	targ;
-
+	
 	targ = find (world, targetname, self.target);
 	self.target = targ.target;
 	setorigin (self, targ.origin - self.mins);

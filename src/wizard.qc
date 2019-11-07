@@ -341,6 +341,9 @@ void()	wiz_death8	=[	$death8,		wiz_death8	] {};
 
 void() wiz_die =
 {
+	if (self.flags & FL_FLY) {
+		self.flags = self.flags - FL_FLY;
+	}
 // check for gib
 	if (self.health < -40)
 	{
@@ -366,6 +369,7 @@ void() wiz_rev7 = [ $death2, wiz_rev8 ] {};
 void() wiz_rev8 = [ $death1, wiz_run1 ] {};
 
 void () wiz_revive = {
+	self.flags = self.flags | FL_FLY;
 	self.health = 80;
 	self.death_anim = 0;
 	wiz_rev1();

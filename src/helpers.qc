@@ -87,8 +87,8 @@ float (float level, float rune) get_runeflag = {
 //Sets whether a player has a rune or not.
 float (float level, float rune, float value) set_rune = {
 	if (level >= NUMLEVELS || level < 0) {
-		bprint("[Error] set_rune function expects a level value between 0 and ");
-		bprint(ftos(NUMLEVELS-1));
+		bprint("[Error] set_rune function expects a level value between 1 and ");
+		bprint(ftos(NUMLEVELS));
 		bprint(". Received a value of ");
 		bprint(ftos(level));
 		bprint(".\n");
@@ -108,8 +108,8 @@ float (float level, float rune, float value) set_rune = {
 //Gets whether the player has a rune
 float (float level, float rune) get_rune = {
 	if (level >= NUMLEVELS || level < 0) {
-		bprint("[Error] get_rune function expects a level value between 0 and ");
-		bprint(ftos(NUMLEVELS-1));
+		bprint("[Error] get_rune function expects a level value between 1 and ");
+		bprint(ftos(NUMLEVELS));
 		bprint(". Received a value of ");
 		bprint(ftos(level));
 		bprint(".\n");
@@ -135,7 +135,7 @@ float (float rune, float value) set_specialflag = {
 		bprint(".\n");
 		return 0;
 	}
-	return set_runeflag(15, rune, value);
+	return set_runeflag(0, rune, value);
 };
 
 //Gets whether a special flag is set
@@ -147,14 +147,14 @@ float (float rune) get_specialflag = {
 		return 0;
 	}
 	
-	return get_runeflag(15, rune);
+	return get_runeflag(0, rune);
 };
 
 //Determines whether a key has been collected in a level.
 float (float level, float key) get_key = {
-	if (level < 0 || level > 14) {
-		bprint("[Error] get_key function expects a level value between 0 and ");
-		bprint(ftos(NUMLEVELS-1));
+	if (level < 1 || level > NUMLEVELS) {
+		bprint("[Error] get_key function expects a level value between 1 and ");
+		bprint(ftos(NUMLEVELS));
 		bprint(". Received a value of ");
 		bprint(ftos(level));
 		bprint(".\n");
@@ -172,9 +172,9 @@ float (float level, float key) get_key = {
 
 //Sets a player's key in a level.
 void (float level, float key, float value) set_key = {
-	if (level < 0 || level > 14) {
-		bprint("[Error] get_key function expects a level value between 0 and ");
-		bprint(ftos(NUMLEVELS-1));
+	if (level < 1 || level > NUMLEVELS) {
+		bprint("[Error] get_key function expects a level value between 1 and ");
+		bprint(ftos(NUMLEVELS));
 		bprint(". Received a value of ");
 		bprint(ftos(level));
 		bprint(".\n");
@@ -192,9 +192,9 @@ void (float level, float key, float value) set_key = {
 
 //Counts the number of runes collected in a certain level.
 float (float level) count_level_runes = {
-	if (level < 0 || level > NUMLEVELS-1) {
-		bprint("[Error] count_level_runes function expects a level value between 0 and ");
-		bprint(ftos(NUMLEVELS-1));
+	if (level < 0 || level > NUMLEVELS) {
+		bprint("[Error] count_level_runes function expects a level value between 1 and ");
+		bprint(ftos(NUMLEVELS));
 		bprint(". Received a value of ");
 		bprint(ftos(level));
 		bprint(".\n");
@@ -217,9 +217,10 @@ float (float level) count_level_runes = {
 float () count_runes = {
 	float total = 0;
 	
-	for (float i = 0; i < NUMLEVELS; i ++) {
+	for (float i = 1; i <= NUMLEVELS; i ++) {
 		total += count_level_runes(i);
 	}
+	cvar_set("temp1",ftos(total));
 	return total;
 };
 
@@ -255,7 +256,7 @@ void(float num) print_bits= {
 	bprint("\n");
 }
 
-void() debugFunc;
+void() debugFunc = {
 	//bprint(ftos(time));
 	//bprint("\n");
 	//centerprint(nextent(world),"ERROR\n-----\nYou have installed\nthis mod incorrectly!!\n-----\nPlease read the readme file\nfor more information.");
@@ -267,7 +268,11 @@ void() debugFunc;
 	
 	//print_bits(runeflags[14]);
 	//centerprint(nextent(world),ftos(get_runeflag(14,1)));
-//}
+	
+	for (float i = 0; i < 16; i ++) {
+		print_bits(runeflags[i]);
+	}
+}
 
 
 
@@ -304,14 +309,14 @@ float(float index) get_ent_data = {
 void(vector org) spawn_tfog;
 void(vector org, entity death_owner) spawn_tdeath;
 
-void (entity obj, string dest, float no_effects) teleport_object = {
+float (entity obj, string dest, float no_effects) teleport_object = {
 	local vector	org;
 	local entity	t;
 	
 	//Find the destination
 	t = find (world, targetname, dest);
 	if (!t) {
-		objerror ("couldn't find target");
+		return FALSE;
 	}
 	
 	// put a tfog where the player was and in front of the destination
@@ -325,11 +330,10 @@ void (entity obj, string dest, float no_effects) teleport_object = {
 	}
 	
 	// move the player and lock him down for a little while
-	if (!obj.health)
-	{
+	if (!obj.health) {
 		obj.origin = t.origin;
 		obj.velocity = (v_forward * obj.velocity_x) + (v_forward * obj.velocity_y);
-		return;
+		return TRUE;
 	}
 	
 	setorigin (obj, t.origin);
@@ -343,4 +347,5 @@ void (entity obj, string dest, float no_effects) teleport_object = {
 		obj.velocity = v_forward * 300;
 	}
 	obj.flags = obj.flags - (obj.flags & FL_ONGROUND);
+	return TRUE;
 }

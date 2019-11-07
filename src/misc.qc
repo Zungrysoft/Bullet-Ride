@@ -127,6 +127,11 @@ void() light_torch_small_walltorch =
 
 void() torch_use = {
 	if (self.model == string_null) {
+		if (self.spawnflags & 4) {
+			setmodel (self, "progs/flame3.mdl");
+		} else {
+			setmodel (self, "progs/flame2.mdl");
+		}
 		self.model = "progs/flame2.mdl";
 		ambientsound (self.origin, "ambience/fire1.wav", 0.5, ATTN_STATIC);
 	} else {
@@ -137,8 +142,13 @@ void() torch_use = {
 }
 
 void() misc_flame_switchable = {
-	precache_model ("progs/flame2.mdl");
-	self.model = "progs/flame2.mdl";
+	if (self.spawnflags & 4) {
+		precache_model ("progs/flame3.mdl");
+		setmodel (self, "progs/flame3.mdl");
+	} else {
+		precache_model ("progs/flame2.mdl");
+		setmodel (self, "progs/flame2.mdl");
+	}
 	setmodel(self, self.model);
 	FireAmbient();
 	self.use = torch_use;
@@ -155,8 +165,13 @@ Large yellow flame ball
 */
 void() light_flame_large_yellow =
 {
-	precache_model ("progs/flame2.mdl");
-	setmodel (self, "progs/flame2.mdl");
+	if (self.spawnflags & 4) {
+		precache_model ("progs/flame3.mdl");
+		setmodel (self, "progs/flame3.mdl");
+	} else {
+		precache_model ("progs/flame2.mdl");
+		setmodel (self, "progs/flame2.mdl");
+	}
 	self.frame = 1;
 	FireAmbient();
 	makestatic (self);
@@ -167,8 +182,13 @@ Small yellow flame ball
 */
 void() light_flame_small_yellow =
 {
-	precache_model ("progs/flame2.mdl");
-	setmodel (self, "progs/flame2.mdl");
+	if (self.spawnflags & 3) {
+		precache_model ("progs/flame3.mdl");
+		setmodel (self, "progs/flame3.mdl");
+	} else {
+		precache_model ("progs/flame2.mdl");
+		setmodel (self, "progs/flame2.mdl");
+	}
 	FireAmbient();
 	makestatic (self);
 };
@@ -369,14 +389,6 @@ Continuously fires spikes.
 "nextthink" delay before firing first spike, so multiple shooters can be stagered.
 */
 
-void() trap_toggle = {
-	if (self.spawnflags & 1) {
-		self.spawnflags = self.spawnflags - 1;
-	} else {
-		self.spawnflags = self.spawnflags | 1;
-	}
-}
-
 void() trap_shooter =
 {
 	trap_spikeshooter ();
@@ -430,7 +442,7 @@ void() flamethrower_think = {
 void() trap_flamethrower = {
 	self.think = flamethrower_think;
 	self.nextthink = .2;
-	self.use = trap_toggle;
+	self.use = SUB_toggle;
 	
 	if (!self.speed) {
 		self.speed = 250;

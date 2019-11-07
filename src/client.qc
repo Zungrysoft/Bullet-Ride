@@ -53,7 +53,7 @@ void() SetChangeParms = {
 	parm15 = runeflags[14];
 	//The bottom six bits will be set to the current level's level_id, so the start map will know what level the player is coming from.
 	//The other bits are set as normal.
-	parm16 = (runeflags[15] & ~(63)) | (world.level_id & 63);
+	parm1 = (runeflags[0] & ~(63)) | (world.level_id & 63);
 };
 
 //Empty, but here for compatibility reasons
@@ -1278,7 +1278,7 @@ entity() SelectSpawnPoint =
 				}
 				
 				//Check if the info_player_start matches the previous level.
-				if (lastspawn.level_id == (runeflags[15] & 63)) {
+				if (lastspawn.level_id == (runeflags[0] & 63)) {
 					return lastspawn;
 				}
 			}
@@ -1302,7 +1302,7 @@ entity() SelectSpawnPoint =
 			}
 			
 			//Check if the info_player_start matches the previous level.
-			if (spot.level_id == (runeflags[15] & 31)) {
+			if (spot.level_id == (runeflags[0] & 31)) {
 				return spot;
 			}
 		}
@@ -2207,15 +2207,13 @@ void(entity targ, entity attacker) ClientObituary =
 					bprint (" was eviscerated by a Fiend\n");
 				if (attacker.classname == "monster_dog")
 					bprint (" was mauled by a Rottweiler\n");
-				if (attacker.classname == "monster_dragon")
-					bprint (" was fried by a Dragon\n");
 				if (attacker.classname == "monster_enforcer")
 					bprint (" was blasted by an Enforcer\n");
 				if (attacker.classname == "monster_fish")
 					bprint (" was fed to the Rotfish\n");
 				if (attacker.classname == "monster_lostsoul")
 					bprint (" was shaken by a Lost Soul\n");
-				if (attacker.classname == "monster_hell_knight")
+				if (attacker.classname == "monster_hell_knight") 
 					bprint (" was slain by a Death Knight\n");
 				if (attacker.classname == "monster_knight")
 					bprint (" was slashed by a Knight\n");
@@ -2233,7 +2231,10 @@ void(entity targ, entity attacker) ClientObituary =
 					bprint (" was scragged by a Scrag\n");
 				if (attacker.classname == "monster_zombie")
 					bprint (" joins the Zombies\n");
-
+				if (attacker.classname == "monster_pain_elemental")
+					bprint (" was overwhelmed by a Pain Elemental\n");
+				if (attacker.classname == "monster_agony_elemental")
+					bprint (" was charred by a Pain Elemental\n");
 				return;
 			}
 

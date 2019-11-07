@@ -1,0 +1,94 @@
+Animations:
+1-12:Idle
+13-25:Claw attack left
+26-38:Claw attack right
+39-47:Pain
+48-58:Shooting
+59-69:Shooting2
+
+$frame hover1 hover2 hover3 hover4 hover5 hover6 hover7 hover8 hover9 hover10 hover11 hover12
+
+$frame lswipe1 lswipe2 lswipe3 lswipe4 lswipe5 lswipe6 lswipe7 lswipe8 lswipe9 lswipe10 lswipe11 lswipe12 lswipe13
+
+$frame rswipe1 rswipe2 rswipe3 rswipe4 rswipe5 rswipe6 rswipe7 rswipe8 rswipe9 rswipe10 rswipe11 rswipe12 rswipe13
+
+$frame paina1 paina2 paina3 paina4 paina5 paina6 paina7 paina8 paina9
+
+$frame attacka1 attacka2 attacka3 attacka4 attacka5 attacka6 attacka7 attacka8 attacka9 attacka10 attacka11
+
+$frame attackb1 attackb2 attackb3 attackb4 attackb5 attackb6 attackb7 attackb8 attackb9 attackb10 attackb11
+
+void() painelem_hover1 = [ $hover1, painelem_hover2 ] {};
+void() painelem_hover2 = [ $hover2, painelem_hover3 ] {};
+void() painelem_hover3 = [ $hover3, painelem_hover4 ] {};
+void() painelem_hover4 = [ $hover4, painelem_hover5 ] {};
+void() painelem_hover5 = [ $hover5, painelem_hover6 ] {};
+void() painelem_hover6 = [ $hover6, painelem_hover7 ] {};
+void() painelem_hover7 = [ $hover7, painelem_hover8 ] {};
+void() painelem_hover8 = [ $hover8, painelem_hover9 ] {};
+void() painelem_hover9 = [ $hover9, painelem_hover10 ] {};
+void() painelem_hover10 = [ $hover10, painelem_hover11 ] {};
+void() painelem_hover11 = [ $hover11, painelem_hover12 ] {};
+void() painelem_hover12 = [ $hover12, painelem_hover1 ] {};
+
+void() painelem_lswipe1 = [ $lswipe1, painelem_lswipe2 ] {};
+void() painelem_lswipe2 = [ $lswipe2, painelem_lswipe3 ] {};
+void() painelem_lswipe3 = [ $lswipe3, painelem_lswipe4 ] {};
+void() painelem_lswipe4 = [ $lswipe4, painelem_lswipe5 ] {};
+void() painelem_lswipe5 = [ $lswipe5, painelem_lswipe6 ] {};
+void() painelem_lswipe6 = [ $lswipe6, painelem_lswipe7 ] {};
+void() painelem_lswipe7 = [ $lswipe7, painelem_lswipe8 ] {};
+void() painelem_lswipe8 = [ $lswipe8, painelem_lswipe9 ] {};
+void() painelem_lswipe9 = [ $lswipe9, painelem_lswipe10 ] {};
+void() painelem_lswipe10 = [ $lswipe10, painelem_lswipe11 ] {};
+void() painelem_lswipe11 = [ $lswipe11, painelem_lswipe12 ] {};
+void() painelem_lswipe12 = [ $lswipe12, painelem_lswipe13 ] {};
+void() painelem_lswipe13 = [ $lswipe13, painelem_lswipe1 ] {};
+
+void() painelem_rswipe1 = [ $rswipe1, painelem_rswipe2 ] {};
+void() painelem_rswipe2 = [ $rswipe2, painelem_rswipe3 ] {};
+void() painelem_rswipe3 = [ $rswipe3, painelem_rswipe4 ] {};
+void() painelem_rswipe4 = [ $rswipe4, painelem_rswipe5 ] {};
+void() painelem_rswipe5 = [ $rswipe5, painelem_rswipe6 ] {};
+void() painelem_rswipe6 = [ $rswipe6, painelem_rswipe7 ] {};
+void() painelem_rswipe7 = [ $rswipe7, painelem_rswipe8 ] {};
+void() painelem_rswipe8 = [ $rswipe8, painelem_rswipe9 ] {};
+void() painelem_rswipe9 = [ $rswipe9, painelem_rswipe10 ] {};
+void() painelem_rswipe10 = [ $rswipe10, painelem_rswipe11 ] {};
+void() painelem_rswipe11 = [ $rswipe11, painelem_rswipe12 ] {};
+void() painelem_rswipe12 = [ $rswipe12, painelem_rswipe13 ] {};
+void() painelem_rswipe13 = [ $rswipe13, painelem_rswipe1 ] {};
+
+void() painelem_paina1 = [ $paina1, painelem_paina2 ] {};
+void() painelem_paina2 = [ $paina2, painelem_paina3 ] {};
+void() painelem_paina3 = [ $paina3, painelem_paina4 ] {};
+void() painelem_paina4 = [ $paina4, painelem_paina5 ] {};
+void() painelem_paina5 = [ $paina5, painelem_paina6 ] {};
+void() painelem_paina6 = [ $paina6, painelem_paina7 ] {};
+void() painelem_paina7 = [ $paina7, painelem_paina8 ] {};
+void() painelem_paina8 = [ $paina8, painelem_paina9 ] {};
+void() painelem_paina9 = [ $paina9, painelem_paina1 ] {};
+
+void() painelem_attacka1 = [ $attacka1, painelem_attacka2 ] {};
+void() painelem_attacka2 = [ $attacka2, painelem_attacka3 ] {};
+void() painelem_attacka3 = [ $attacka3, painelem_attacka4 ] {};
+void() painelem_attacka4 = [ $attacka4, painelem_attacka5 ] {};
+void() painelem_attacka5 = [ $attacka5, painelem_attacka6 ] {};
+void() painelem_attacka6 = [ $attacka6, painelem_attacka7 ] {};
+void() painelem_attacka7 = [ $attacka7, painelem_attacka8 ] {};
+void() painelem_attacka8 = [ $attacka8, painelem_attacka9 ] {};
+void() painelem_attacka9 = [ $attacka9, painelem_attacka10 ] {};
+void() painelem_attacka10 = [ $attacka10, painelem_attacka11 ] {};
+void() painelem_attacka11 = [ $attacka11, painelem_attacka1 ] {};
+
+void() painelem_attackb1 = [ $attackb1, painelem_attackb2 ] {};
+void() painelem_attackb2 = [ $attackb2, painelem_attackb3 ] {};
+void() painelem_attackb3 = [ $attackb3, painelem_attackb4 ] {};
+void() painelem_attackb4 = [ $attackb4, painelem_attackb5 ] {};
+void() painelem_attackb5 = [ $attackb5, painelem_attackb6 ] {};
+void() painelem_attackb6 = [ $attackb6, painelem_attackb7 ] {};
+void() painelem_attackb7 = [ $attackb7, painelem_attackb8 ] {};
+void() painelem_attackb8 = [ $attackb8, painelem_attackb9 ] {};
+void() painelem_attackb9 = [ $attackb9, painelem_attackb10 ] {};
+void() painelem_attackb10 = [ $attackb10, painelem_attackb11 ] {};
+void() painelem_attackb11 = [ $attackb11, painelem_attackb1 ] {};

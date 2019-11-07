@@ -315,5 +315,11 @@ void (void() thinkst) SUB_CheckRefire =
 	self.think = thinkst;
 };
 
-
+void() SUB_toggle = {
+	if (self.spawnflags & 1) {
+		self.spawnflags = self.spawnflags - 1;
+	} else {
+		self.spawnflags = self.spawnflags | 1;
+	}
+}
 

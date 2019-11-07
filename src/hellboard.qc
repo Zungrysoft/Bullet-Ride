@@ -236,7 +236,10 @@ void() hellboard_use = {
 			//Marks the player as being in a room currently.
 			activator.hb_val = 1;
 			//Teleports the player.
-			teleport_object(activator, ftos(selected + 200), 0);
+			if (!teleport_object(activator, ftos(selected + 200), 0)) {
+				//If they didn't teleport anywhere valid, just teleport them to an info_player_start
+				teleport_object(activator, "info_player_start", 0);
+			}
 			//teleport_object(activator, "backout", 0);
 			//Marks the room as complete.
 			set_ent_data(selected-1, 1);

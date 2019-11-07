@@ -478,7 +478,7 @@ float(float space, float dir) get_space_to = {
 	return ret;
 }
 
-void() debugFunc = {
+/*void() debugFunc = {
 	entity maze = find(world,classname,"misc_maze");
 	for (float i = 0; i < maze_size; i ++) {
 		bprint("Space ");
@@ -487,7 +487,7 @@ void() debugFunc = {
 		bprint(ftos(maze_spaces[i]));
 		bprint("\n");
 	}
-}
+}*/
 
 
 

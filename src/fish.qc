@@ -133,6 +133,9 @@ void() f_death20 =[      $death20,       f_death21       ] {};
 void() f_death21 =[      $death21,       f_death21       ] {};
 
 void() f_die = {
+	if (self.flags & FL_SWIM) {
+		self.flags = self.flags - FL_SWIM;
+	}
 	if (self.health < -85)
 	{
 		self.death_anim = 0;
@@ -176,6 +179,7 @@ void() f_rev11 = [ $death2, f_rev12 ] {};
 void() f_rev12 = [ $death1, f_run1 ] {};
 
 void () f_revive = {
+	self.flags = self.flags | FL_SWIM;
 	self.health = 25;
 	self.death_anim = 0;
 	f_rev1();

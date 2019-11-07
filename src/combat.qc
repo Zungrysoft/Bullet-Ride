@@ -118,7 +118,7 @@ The damage is coming from inflictor, but get mad at attacker
 This should be the only function that ever reduces health.
 ============
 */
-void(entity targ, entity inflictor, entity attacker, float damage) T_Damage=
+void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 {
 	local	vector	dir;
 	local	entity	oldself;
@@ -135,29 +135,6 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage=
 	if (attacker.super_damage_finished > time)
 		damage = damage * 4;
 
-// save damage based on the target's armor level
-
-	save = ceil(targ.armortype*damage);
-	if (save >= targ.armorvalue)
-	{
-		save = targ.armorvalue;
-		targ.armortype = 0;	// lost all armor
-		targ.items = targ.items - (targ.items & (IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3));
-	}
-	
-	targ.armorvalue = targ.armorvalue - save;
-	take = ceil(damage-save);
-
-// add to the damage total for clients, which will be sent as a single
-// message at the end of the frame
-// FIXME: remove after combining shotgun blasts?
-	if (targ.flags & FL_CLIENT)
-	{
-		targ.dmg_take = targ.dmg_take + take;
-		targ.dmg_save = targ.dmg_save + save;
-		targ.dmg_inflictor = inflictor;
-	}
-
 // figure momentum add
 	if ( (inflictor != world) && (targ.movetype == MOVETYPE_WALK) )
 	{
@@ -165,7 +142,7 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage=
 		dir = normalize(dir);
 		targ.velocity = targ.velocity + dir*damage*8;
 	}
-
+	
 // check for godmode or invincibility
 	if (targ.flags & FL_GODMODE) {
 		return;
@@ -186,11 +163,33 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage=
 		return;
 	
 	//Don't do the damage if the target has too high of a damage threshold.
-	if (targ.damage_threshold > take) {
+	if (targ.damage_threshold > damage) {
 		return;
 	}
-	//bprint(ftos(take));
-	//bprint("\n");
+	
+// save damage based on the target's armor level
+
+	save = ceil(targ.armortype*damage);
+	if (save >= targ.armorvalue)
+	{
+		save = targ.armorvalue;
+		targ.armortype = 0;	// lost all armor
+		targ.items = targ.items - (targ.items & (IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3));
+	}
+	
+	targ.armorvalue = targ.armorvalue - save;
+	take = ceil(damage-save);
+	
+// add to the damage total for clients, which will be sent as a single
+// message at the end of the frame
+// FIXME: remove after combining shotgun blasts?
+	if (targ.flags & FL_CLIENT)
+	{
+		targ.dmg_take = targ.dmg_take + take;
+		targ.dmg_save = targ.dmg_save + save;
+		targ.dmg_inflictor = inflictor;
+	}
+
 // do the damage
 	targ.health = targ.health - take;
 			

@@ -72,7 +72,6 @@ The number of seconds to spend standing or bowing for path_stand or path_bow
 ==============================================================================
 */
 
-
 void() movetarget_f =
 {
 	if (!self.targetname)
@@ -80,6 +79,7 @@ void() movetarget_f =
 		
 	self.solid = SOLID_TRIGGER;
 	self.touch = t_movetarget;
+	self.use = SUB_toggle;
 	setsize (self, '-8 -8 -8', '8 8 8');
 	
 };
@@ -87,6 +87,7 @@ void() movetarget_f =
 /*QUAKED path_corner (0.5 0.3 0) (-8 -8 -8) (8 8 8)
 Monsters will continue walking towards the next target corner.
 */
+
 void() path_corner =
 {
 	movetarget_f ();
@@ -317,6 +318,8 @@ local float	rsnd;
 		sound (self, CHAN_VOICE, "soldier/sight1.wav", 1, ATTN_NORM);
 	else if (self.classname == "monster_shalrath")
 		sound (self, CHAN_VOICE, "shalrath/sight.wav", 1, ATTN_NORM);
+	else if (self.classname == "monster_pain_elemental")
+		sound (self, CHAN_VOICE, "painelem/wake.wav", 1, ATTN_NORM);
 };
 
 void() FoundTarget =
@@ -583,6 +586,7 @@ float()	WizardCheckAttack;
 float()	DogCheckAttack;
 float()	DemonCheckAttack;
 float()	SoulCheckAttack;
+float()	PainelemCheckAttack;
 
 float() CheckAnyAttack =
 {
@@ -602,6 +606,8 @@ float() CheckAnyAttack =
 		return DogCheckAttack ();
 	if (self.classname == "monster_wizard")
 		return WizardCheckAttack ();
+	if (self.classname == "monster_pain_elemental")
+		return PainelemCheckAttack ();
 	return CheckAttack ();
 };
 

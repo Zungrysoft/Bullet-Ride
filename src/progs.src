@@ -38,7 +38,7 @@ enforcer.qc			// registered
 oldone.qc			// registered
 
 lostsoul.qc			// bulletride
-//painelemental.qc	// bulletride
+painelemental.qc	// bulletride
 crucifix.qc			// bulletride
 maze.qc				// bulletride
 hellboard.qc		// bulletride

@@ -173,6 +173,10 @@ void() ShalMissile =
 
 void() ShalHome =
 {
+	if (self.owner.health < 1) {
+		return;
+	}
+	
 	local vector	dir, vtemp;
 	vtemp = self.enemy.origin + '0 0 10';
 	if (self.enemy.health < 1)

@@ -72,7 +72,7 @@ void() soul_standby6 = [ $hover6, soul_standby1 ] {ai_run(1);};
 void() soul_charge1 = [ $charge1, soul_charge2 ] {ai_face();};
 void() soul_charge2 = [ $charge2, soul_charge3 ] {ai_face();};
 void() soul_charge3 = [ $charge3, soul_charge4 ] {ai_face();};
-void() soul_charge4 = [ $charge4, soul_charge5 ] {Soul_Charge();};
+void() soul_charge4 = [ $charge4, soul_charge5 ] {ai_face();Soul_Charge();};
 void() soul_charge5 = [ $charge5, soul_charge6 ] {};
 void() soul_charge6 = [ $charge6, soul_charge7 ] {};
 void() soul_charge7 = [ $charge6, soul_standby1 ] {};
@@ -266,6 +266,7 @@ void() Soul_Charge = {
 	//self.velocity = 500 * v_forward;
 	self.velocity = 500 * normalize((self.enemy.origin + '0 0 16') - self.origin);
 	self.nextthink = time + 10;
+	self.think = soul_charge5;
 }
 
 void() Soul_Charge_Touch = {
@@ -279,6 +280,7 @@ void() Soul_Charge_Touch = {
 			T_Damage (other, self, self, 10);	
 		}
 	}
+	bprint("COLLISION\n");
 	self.velocity = 0;
 	self.movetype = MOVETYPE_STEP;
 	self.attack_finished = time + 1.3;

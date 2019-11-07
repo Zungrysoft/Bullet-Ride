@@ -76,12 +76,6 @@ enemy as activator.
 */
 void() monster_death_use =
 {
-// fall to ground
-	if (self.flags & FL_FLY)
-		self.flags = self.flags - FL_FLY;
-	if (self.flags & FL_SWIM)
-		self.flags = self.flags - FL_SWIM;
-
 	if (!self.target)
 		return;
 
