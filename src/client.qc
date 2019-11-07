@@ -2235,6 +2235,8 @@ void(entity targ, entity attacker) ClientObituary =
 					bprint (" was overwhelmed by a Pain Elemental\n");
 				if (attacker.classname == "monster_agony_elemental")
 					bprint (" was charred by a Pain Elemental\n");
+				if (attacker.classname == "monster_gunner")
+					bprint (" was zapped by an Ultimus\n");
 				return;
 			}
 

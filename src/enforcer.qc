@@ -37,6 +37,25 @@ $frame paind1 paind2 paind3 paind4 paind5 paind6 paind7 paind8
 $frame paind9 paind10 paind11 paind12 paind13 paind14 paind15 paind16
 $frame paind17 paind18 paind19
 
+void() plasma_think = {
+	if (self.frame >= 4) {
+		remove(self);
+	} else {
+		self.frame ++;
+		self.nextthink = time + 0.1;
+	}
+};
+
+void() BecomePlasma = {
+	self.movetype = MOVETYPE_NONE;
+	self.velocity = '0 0 0';
+	self.touch = SUB_Null;
+	setmodel (self, "progs/burst_plasma.spr");
+	self.solid = SOLID_NOT;
+	self.frame = 0;
+	self.nextthink = time + .1;
+	self.think = plasma_think;
+};
 
 void() Laser_Touch =
 {
@@ -71,11 +90,55 @@ void() Laser_Touch =
 	remove(self);	
 };
 
+void() Laser_Touch2 =
+{
+	local vector org;
+	
+	if (other == self.owner)
+		return;		// don't explode on owner
+
+	if (pointcontents(self.origin) == CONTENT_SKY)
+	{
+		remove(self);
+		return;
+	}
+	
+	sound (self, CHAN_WEAPON, "enforcer/gunstop.wav", 1, ATTN_STATIC);
+	org = self.origin - 8*normalize(self.velocity);
+	
+	if (other.health)
+	{
+		SpawnBlood (org, self.velocity*0.2, 15);
+		T_Damage (other, self, self.owner, 15);
+	}
+	else
+	{
+		WriteByte (MSG_BROADCAST, SVC_TEMPENTITY);
+		WriteByte (MSG_BROADCAST, TE_GUNSHOT);
+		WriteCoord (MSG_BROADCAST, org_x);
+		WriteCoord (MSG_BROADCAST, org_y);
+		WriteCoord (MSG_BROADCAST, org_z);
+	}
+	
+	BecomePlasma();
+};
+
+void() laser_particle = {
+	makevectors(self.angles);
+	particle(self.origin + (v_forward * -5), '0 0 0', 47, 4);
+	self.think = laser_particle;
+	self.nextthink = time + .03;
+}
+
 void(vector org, vector vec) LaunchLaser =
 {
-	if (self.classname == "monster_enforcer")
+	
+	if (self.classname == "monster_enforcer") {
 		sound (self, CHAN_WEAPON, "enforcer/enfire.wav", 1, ATTN_NORM);
-
+	} else if (self.classname == "monster_gunner") {
+		sound (self, CHAN_WEAPON, "enforcer/gunfire.wav", 1, ATTN_NORM);
+	}
+	
 	vec = normalize(vec);
 	
 	newmis = spawn();
@@ -84,7 +147,13 @@ void(vector org, vector vec) LaunchLaser =
 	newmis.solid = SOLID_BBOX;
 	newmis.effects = EF_DIMLIGHT;
 
-	setmodel (newmis, "progs/laser.mdl");
+	if (self.classname == "monster_gunner") {
+		setmodel (newmis, "progs/laser2.mdl");
+		newmis.classname = "laser";
+	} else {
+		setmodel (newmis, "progs/laser.mdl");
+		newmis.classname = "laser2";
+	}
 	setsize (newmis, '0 0 0', '0 0 0');		
 
 	setorigin (newmis, org);
@@ -92,12 +161,16 @@ void(vector org, vector vec) LaunchLaser =
 	newmis.velocity = vec * 600;
 	newmis.angles = vectoangles(newmis.velocity);
 
-	newmis.nextthink = time + 5;
-	newmis.think = SUB_Remove;
-	newmis.touch = Laser_Touch;
+	if (self.classname == "monster_gunner") {
+		newmis.touch = Laser_Touch2;
+		newmis.nextthink = time + .1;
+		newmis.think = laser_particle;
+	} else {
+		newmis.touch = Laser_Touch;
+		newmis.nextthink = time + 5;
+		newmis.think = SUB_Remove;
+	}
 };
-
-
 
 void() enforcer_fire =
 {
@@ -107,7 +180,7 @@ void() enforcer_fire =
 	makevectors (self.angles);
 	
 	org = self.origin + v_forward * 30 + v_right * 8.5 + '0 0 16';
-
+	
 	LaunchLaser(org, self.enemy.origin - self.origin);
 };
 
@@ -168,6 +241,56 @@ void()	enf_atk12	=[	$attack8,	enf_atk13	] {ai_face();};
 void()	enf_atk13	=[	$attack9,	enf_atk14	] {ai_face();};
 void()	enf_atk14	=[	$attack10,	enf_run1	] {ai_face();
 SUB_CheckRefire (enf_atk1);
+};
+
+float() gunner_refire;
+
+void()	enf_gun1	=[	$attack1,	enf_gun2	] {ai_face();};
+void()	enf_gun2	=[	$attack2,	enf_gun3	] {ai_face();};
+void()	enf_gun3	=[	$attack3,	enf_gun4	] {ai_face();};
+void()	enf_gun4	=[	$attack4,	enf_gun5	] {ai_face();};
+void()	enf_gun5	=[	$attack5,	enf_gun6	] {ai_face();};
+void()	enf_gun6	=[	$attack6,	enf_gun8	] {enforcer_fire();};
+//void()	enf_gun7	=[	$attack7,	enf_gun8	] {ai_face();};
+void()	enf_gun8	=[	$attack8,	enf_gun9	] {ai_face();
+	if (gunner_refire()) {
+		self.lefty = 0;
+	} else {
+		self.lefty ++;
+	}
+	//If the enemy is in sight or was recently, continue firing.
+	//If the animation has repeated four times despite the target being out of range, let it end.
+	if (self.lefty < 4) {
+		self.think = enf_gun5;
+	}
+};
+void()	enf_gun9	=[	$attack9,	enf_gun10	] {ai_face();};
+void()	enf_gun10	=[	$attack10,	enf_run1	] {};
+
+//gunner_refire is basically the same as the CheckAttack function, but with no randomness. (And without the other unneeded clutter.)
+float() gunner_refire = {
+	local vector	spot1, spot2;	
+	local entity	targ;
+
+	targ = self.enemy;
+	
+// see if any entities are in the way of the shot
+	spot1 = self.origin + self.view_ofs;
+	spot2 = targ.origin + targ.view_ofs;
+
+	traceline (spot1, spot2, FALSE, self);
+
+	if (trace_ent != targ)
+		return FALSE;		// don't have a clear shot
+			
+	if (trace_inopen && trace_inwater)
+		return FALSE;			// sight line crossed contents
+		
+	if (enemy_range == RANGE_FAR) {
+		return FALSE;
+	} else {
+		return TRUE;
+	}
 };
 
 void()	enf_paina1	=[	$paina1,	enf_paina2	] {};
@@ -234,7 +357,7 @@ void(entity attacker, float damage)	enf_pain =
 		self.pain_finished = time + 1;
 		enf_painb1 ();
 	}
-	else if (r < 0.7)
+	else if (r < 0.7 || self.classname == "monster_gunner")
 	{
 		self.pain_finished = time + 1;
 		enf_painc1 ();
@@ -287,7 +410,11 @@ void() enf_die =
 	{
 		self.death_anim = 0;
 		sound (self, CHAN_VOICE, "player/udeath.wav", 1, ATTN_NORM);
-		ThrowHead ("progs/h_mega.mdl", self.health);
+		if (self.classname == "monster_gunner") {
+			ThrowHead ("progs/h_gunner.mdl", self.health);
+		} else {
+			ThrowHead ("progs/h_mega.mdl", self.health);
+		}
 		ThrowGib ("progs/gib1.mdl", self.health);
 		ThrowGib ("progs/gib2.mdl", self.health);
 		ThrowGib ("progs/gib3.mdl", self.health);
@@ -383,6 +510,50 @@ void() monster_enforcer =
 	self.th_pain = enf_pain;
 	self.th_die = enf_die;
 	self.th_missile = enf_atk1;
+	self.th_revive = enf_revive;
+
+	walkmonster_start();
+};
+
+void() monster_gunner =
+{
+	if (deathmatch)
+	{
+		remove(self);
+		return;
+	}
+	precache_model2 ("progs/gunner.mdl");
+	precache_model2 ("progs/h_gunner.mdl");
+	precache_model2 ("progs/laser2.mdl");
+	precache_model("progs/burst_plasma.spr");
+
+	precache_sound2 ("enforcer/death1.wav");
+	precache_sound2 ("enforcer/gunfire.wav");
+	precache_sound2 ("enforcer/gunstop.wav");
+	//precache_sound2 ("enforcer/gunpower.wav");
+	precache_sound2 ("enforcer/idle1.wav");
+	precache_sound2 ("enforcer/pain1.wav");
+	precache_sound2 ("enforcer/pain2.wav");
+	precache_sound2 ("enforcer/elim_sight1.wav");
+	precache_sound2 ("enforcer/elim_sight2.wav");
+	precache_sound2 ("enforcer/elim_sight3.wav");
+	precache_sound2 ("enforcer/elim_sight4.wav");
+	
+	self.solid = SOLID_SLIDEBOX;
+	self.movetype = MOVETYPE_STEP;
+
+	setmodel (self, "progs/gunner.mdl");
+
+	setsize (self, '-16 -16 -24', '16 16 40');
+	self.health = 80;
+	self.ammo_cells += 10;
+
+	self.th_stand = enf_stand1;
+	self.th_walk = enf_walk1;
+	self.th_run = enf_run1;
+	self.th_pain = enf_pain;
+	self.th_die = enf_die;
+	self.th_missile = enf_gun1;
 	self.th_revive = enf_revive;
 
 	walkmonster_start();

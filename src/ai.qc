@@ -305,14 +305,26 @@ local float	rsnd;
 	else if (self.classname == "monster_enforcer")
 	{
 		rsnd = rint(random() * 3);			
-		if (rsnd == 1)
+		if (rsnd >= 3)
 			sound (self, CHAN_VOICE, "enforcer/sight1.wav", 1, ATTN_NORM);
-		else if (rsnd == 2)
+		else if (rsnd >= 2)
 			sound (self, CHAN_VOICE, "enforcer/sight2.wav", 1, ATTN_NORM);
-		else if (rsnd == 0)
+		else if (rsnd >= 1)
 			sound (self, CHAN_VOICE, "enforcer/sight3.wav", 1, ATTN_NORM);
 		else
 			sound (self, CHAN_VOICE, "enforcer/sight4.wav", 1, ATTN_NORM);
+	}
+	else if (self.classname == "monster_gunner")
+	{
+		rsnd = rint(random() * 3);			
+		if (rsnd >= 3)
+			sound (self, CHAN_VOICE, "enforcer/elim_sight1.wav", 1, ATTN_NORM);
+		else if (rsnd >= 2)
+			sound (self, CHAN_VOICE, "enforcer/elim_sight2.wav", 1, ATTN_NORM);
+		else if (rsnd >= 1)
+			sound (self, CHAN_VOICE, "enforcer/elim_sight3.wav", 1, ATTN_NORM);
+		else
+			sound (self, CHAN_VOICE, "enforcer/elim_sight4.wav", 1, ATTN_NORM);
 	}
 	else if (self.classname == "monster_army")
 		sound (self, CHAN_VOICE, "soldier/sight1.wav", 1, ATTN_NORM);
