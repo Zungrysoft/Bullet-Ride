@@ -259,6 +259,9 @@ void() train_next =
 		objerror ("train_next: no next target");
 	if (targ.wait)
 		self.wait = targ.wait;
+	if (self.classname == "misc_teleporttrain") {
+		self.angles = targ.angles;
+	}
 	else
 		self.wait = 0;
 	sound (self, CHAN_VOICE, self.noise1, 1, ATTN_NORM);
@@ -354,9 +357,6 @@ void() misc_teleporttrain =
 	self.noise1 = ("misc/null.wav");
 	precache_sound ("misc/null.wav");
 
-	precache_model2 ("progs/teleport.mdl");
-	setmodel (self, "progs/teleport.mdl");
-	setsize (self, self.mins , self.maxs);
 	setorigin (self, self.origin);
 
 // start trains on the second frame, to make sure their targets have had

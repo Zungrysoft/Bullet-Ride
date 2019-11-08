@@ -1016,17 +1016,10 @@ void() W_SetCurrentAmmo =
 	}
 	else if (self.weapon == IT_SUPER_SHOTGUN)
 	{
-		if (self.items2 & IT_SUPER_SHOTGUN) {
-			self.currentammo = self.ammo_cells;
-			self.weaponframe = 0;
-			self.items = self.items | IT_CELLS;
-			self.weaponmodel = "progs/v_shot.mdl";
-		} else {
-			self.currentammo = self.ammo_shells;
-			self.weaponframe = 0;
-			self.items = self.items | IT_SHELLS;
-			self.weaponmodel = "progs/v_shot2.mdl";
-		}
+		self.currentammo = self.ammo_shells;
+		self.weaponframe = 0;
+		self.items = self.items | IT_SHELLS;
+		self.weaponmodel = "progs/v_shot2.mdl";
 	}
 	else if (self.weapon == IT_NAILGUN)
 	{
@@ -1067,6 +1060,12 @@ void() W_SetCurrentAmmo =
 		self.weaponmodel = "progs/v_rail.mdl";
 		self.weaponframe = 0;
 		self.items = self.items | IT_NAILS;
+	}
+	else if (self.weapon == IT_SPECIAL) {
+		self.currentammo = self.ammo_cells;
+		self.weaponframe = 0;
+		self.items = self.items | IT_CELLS;
+		self.weaponmodel = "progs/v_shot.mdl";
 	}
 	else
 	{
@@ -1160,13 +1159,8 @@ void() W_Attack =
 	else if (self.weapon == IT_SUPER_SHOTGUN)
 	{
 		player_shot1 ();
-		if (self.items2 & IT_SUPER_SHOTGUN) {
-			W_FireFlamethrower ();
-			self.attack_finished = time + .08;
-		} else {
-			W_FireSuperShotgun ();
-			self.attack_finished = time + .7;
-		}
+		W_FireSuperShotgun ();
+		self.attack_finished = time + .7;
 		
 	}
 	else if (self.weapon == IT_NAILGUN)
@@ -1196,6 +1190,12 @@ void() W_Attack =
 		player_light1();
 		self.attack_finished = time + 0.1;
 		sound (self, CHAN_AUTO, "weapons/lstart.wav", 1, ATTN_NORM);
+	}
+	else if (self.weapon == IT_SPECIAL) 
+	{
+		player_shot1();
+		W_FireFlamethrower ();
+		self.attack_finished = time + .08;
 	}
 };
 
@@ -1258,6 +1258,12 @@ void() W_ChangeWeapon =
 		if (self.ammo_cells < 1)
 			am = 1;
 	}
+	else if (self.impulse == 225)
+	{
+		fl = IT_SPECIAL;
+		if (self.ammo_cells < 1)
+			am = 1;
+	}
 
 	self.impulse = 0;
 	
@@ -1315,6 +1321,7 @@ void() CheatCommand =
 		IT_ROCKET_LAUNCHER |
 		IT_RAILGUN |
 		IT_LIGHTNING |
+		IT_SPECIAL |
 		IT_KEY1 | IT_KEY2;
 		
 	self.items2 = self.items;
@@ -1341,8 +1348,8 @@ void() CycleWeaponCommand =
 	while (1)
 	{
 		am = 0;
-
-		if (self.weapon == IT_LIGHTNING)
+		
+		if (self.weapon == IT_SPECIAL)
 		{
 			self.weapon = IT_AXE;
 		}
@@ -1385,6 +1392,12 @@ void() CycleWeaponCommand =
 		else if (self.weapon == IT_ROCKET_LAUNCHER)
 		{
 			self.weapon = IT_LIGHTNING;
+			if (self.ammo_cells < 1)
+				am = 1;
+		}
+		if (self.weapon == IT_LIGHTNING)
+		{
+			self.weapon = IT_SPECIAL;
 			if (self.ammo_cells < 1)
 				am = 1;
 		}
@@ -1458,6 +1471,12 @@ void() CycleWeaponReverseCommand =
 		}
 		else if (self.weapon == IT_AXE)
 		{
+			self.weapon = IT_SPECIAL;
+			if (self.ammo_cells < 1)
+				am = 1;
+		}
+		else if (self.weapon == IT_SPECIAL)
+		{
 			self.weapon = IT_LIGHTNING;
 			if (self.ammo_cells < 1)
 				am = 1;
@@ -1518,7 +1537,7 @@ ImpulseCommands
 */
 void() ImpulseCommands =
 {	
-	if (self.impulse >= 1 && self.impulse <= 8)
+	if ((self.impulse >= 1 && self.impulse <= 8) || self.impulse == 225)
 		W_ChangeWeapon ();
 
 	if (self.impulse == 9)

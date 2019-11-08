@@ -290,6 +290,7 @@ float	IT_RAILGUN				= 8;
 float	IT_GRENADE_LAUNCHER		= 16;
 float	IT_ROCKET_LAUNCHER		= 32;
 float	IT_LIGHTNING			= 64;
+float	IT_SPECIAL				= 128;
 
 float	IT_SHELLS				= 256;
 float	IT_NAILS				= 512;
@@ -446,6 +447,7 @@ float		skill;
 .float	lefty;
 
 .float	search_time;
+.float	still_visible;
 .float	attack_state;
 
 #define	AS_STRAIGHT 1

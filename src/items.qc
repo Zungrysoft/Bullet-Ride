@@ -2,6 +2,28 @@ void() W_SetCurrentAmmo;
 /* ALL LIGHTS SHOULD BE 0 1 0 IN COLOR ALL OTHER ITEMS SHOULD
 BE .8 .3 .4 IN COLOR */
 
+//Function to check whether a player has shootable ammo currently.
+float(entity p) safety_regen_check = {
+	if (p.ammo_shells > 0 && ((p.items & IT_SHOTGUN) || (p.items & IT_SUPER_SHOTGUN))) {
+		return FALSE;
+	}
+	
+	if (p.ammo_nails > 0 && ((p.items & IT_NAILGUN) || (p.items & IT_RAILGUN))) {
+		return FALSE;
+	}
+	
+	//Grenade launcher isn't counted since it can't be used to shoot buttons.
+	if (p.ammo_rockets > 0 && (p.items & IT_ROCKET_LAUNCHER)) {
+		return FALSE;
+	}
+	
+	if (p.ammo_cells > 0 && (p.items & IT_LIGHTNING)) {
+		return FALSE;
+	}
+	
+	return TRUE;
+}
+
 
 void() SUB_regen =
 {
@@ -13,7 +35,7 @@ void() SUB_regen =
 		while(1) {
 			t = find(t, classname, "player");
 			if (t) {
-				if (t.ammo_shells == 0 && t.ammo_nails == 0 && t.ammo_rockets == 0 && t.ammo_cells == 0) {
+				if (safety_regen_check(t)) {
 					//If it finds a player who is entirely out of ammo, do the regen
 					do_regen = 1;
 					break;
@@ -492,15 +514,6 @@ void() weapon_touch =
 		new = IT_SUPER_SHOTGUN;
 		other.ammo_shells = other.ammo_shells + 10;
 	}
-	else if (self.classname == "weapon_flamethrower")
-	{
-		if (leave && (other.items & IT_SUPER_SHOTGUN) )
-			return;
-		hadammo = other.ammo_rockets;			
-		new = IT_SUPER_SHOTGUN;
-		other.items2 = other.items2 | IT_SUPER_SHOTGUN;
-		other.ammo_shells = other.ammo_cells + 25;
-	}
 	else if (self.classname == "weapon_rocketlauncher")
 	{
 		if (leave && (other.items & IT_ROCKET_LAUNCHER) )
@@ -524,6 +537,15 @@ void() weapon_touch =
 		hadammo = other.ammo_rockets;			
 		new = IT_LIGHTNING;
 		other.ammo_cells = other.ammo_cells + 15;
+	}
+	else if (self.classname == "weapon_flamethrower")
+	{
+		if (leave && (other.items & IT_SPECIAL) )
+			return;
+		hadammo = other.ammo_rockets;
+		new = IT_SPECIAL;
+		other.items = other.items | IT_SPECIAL;
+		other.ammo_cells = other.ammo_cells + 25;
 	}
 	else
 		objerror ("weapon_touch: unknown classname");

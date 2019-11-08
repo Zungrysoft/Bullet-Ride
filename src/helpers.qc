@@ -220,7 +220,6 @@ float () count_runes = {
 	for (float i = 1; i <= NUMLEVELS; i ++) {
 		total += count_level_runes(i);
 	}
-	cvar_set("temp1",ftos(total));
 	return total;
 };
 
@@ -337,7 +336,11 @@ float (entity obj, string dest, float no_effects) teleport_object = {
 	}
 	
 	setorigin (obj, t.origin);
-	obj.angles = t.mangle;
+	if (t.mangle) {
+		obj.angles = t.mangle;
+	} else {
+		obj.angles = t.angles;
+	}
 	if (obj.classname == "player") {
 		obj.fixangle = 1;		// turn this way immediately
 		obj.teleport_time = time + 0.7;

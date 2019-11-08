@@ -280,8 +280,14 @@ void(entity attacker, float damage)	sham_pain =
 
 	if (self.pain_finished > time)
 		return;
+	
+	if (self.owner) {
+		remove (self.owner);
+		self.owner = 0;
+	}
+	
 	self.pain_finished = time + 2;
-		
+	
 	sham_pain1 ();
 };
 

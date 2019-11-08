@@ -221,6 +221,10 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 
 	if (self.th_pain)
 	{
+		if (inflictor.classname == "player") {
+			self.still_visible = time + 5;
+		}
+		
 		self.th_pain (attacker, take);
 	// nightmare mode monsters don't go into pain frames often
 		if (skill == 3)

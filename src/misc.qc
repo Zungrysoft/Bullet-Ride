@@ -334,6 +334,7 @@ void() misc_explobox2 =
 
 float SPAWNFLAG_SUPERSPIKE	= 1;
 float SPAWNFLAG_LASER = 2;
+float SPAWNFLAG_PLASMA = 4;
 
 void(vector org, vector vec) LaunchLaser;
 
@@ -341,7 +342,10 @@ void() spikeshooter_use =
 {
 	if (self.spawnflags & SPAWNFLAG_LASER)
 	{
-		sound (self, CHAN_VOICE, "enforcer/enfire.wav", 1, ATTN_NORM);
+		LaunchLaser (self.origin, self.movedir);
+	}
+	else if (self.spawnflags & SPAWNFLAG_PLASMA)
+	{
 		LaunchLaser (self.origin, self.movedir);
 	}
 	else
@@ -496,6 +500,132 @@ void() trap_grenade_use = {
 
 void() trap_grenade = {
 	self.use = trap_grenade_use;
+};
+
+void() trap_rocket_touch =
+{
+	local float	damg;
+
+	if (other == self.owner)
+		return;		// don't explode on owner
+
+	if (pointcontents(self.origin) == CONTENT_SKY)
+	{
+		remove(self);
+		return;
+	}
+
+	damg = 40;
+	
+	if (other.health)
+	{
+		if (other.classname == "monster_shambler")
+			damg = damg * 0.5;	// mostly immune
+		T_Damage (other, self, self.owner, damg );
+	}
+
+	// don't do radius damage to the other, because all the damage
+	// was done in the impact
+	T_RadiusDamage (self, self.owner, 120, other);
+
+//	sound (self, CHAN_WEAPON, "weapons/r_exp3.wav", 1, ATTN_NORM);
+	self.origin = self.origin - 8*normalize(self.velocity);
+
+	WriteByte (MSG_BROADCAST, SVC_TEMPENTITY);
+	WriteByte (MSG_BROADCAST, TE_EXPLOSION);
+	WriteCoord (MSG_BROADCAST, self.origin_x);
+	WriteCoord (MSG_BROADCAST, self.origin_y);
+	WriteCoord (MSG_BROADCAST, self.origin_z);
+
+	BecomeExplosion ();
+};
+
+
+
+/*
+================
+W_FireRocket
+================
+*/
+void() trap_rocket_use =
+{
+	
+	local	entity missile;
+	
+	sound (self, CHAN_WEAPON, "weapons/sgun1.wav", 1, ATTN_NORM);
+
+	self.punchangle_x = -2;
+
+	missile = spawn ();
+	missile.owner = self;
+	missile.movetype = MOVETYPE_FLYMISSILE;
+	missile.solid = SOLID_BBOX;
+	missile.classname = "missile";
+		
+// set missile speed	
+
+	makevectors (self.v_angle);
+	missile.velocity = aim(self, 1000);
+	missile.velocity = missile.velocity * 1000;
+	missile.angles = vectoangles(missile.velocity);
+	
+	missile.touch = trap_rocket_touch;
+	
+// set missile duration
+	missile.nextthink = time + 5;
+	missile.think = SUB_Remove;
+
+	setmodel (missile, "progs/missile.mdl");
+	setsize (missile, '0 0 0', '0 0 0');		
+	setorigin (missile, self.origin + v_forward*8 + '0 0 16');
+};
+
+void() trap_rocket = {
+	self.use = trap_rocket_use;
+};
+
+void() trap_lightning_think = {
+	local	vector		org;
+	
+	self.think = trap_lightning_think;
+	self.nextthink = time + .2;
+	
+	if (self.spawnflags & 1) {
+		return;
+	}
+
+	if (self.t_width < time)
+	{
+		sound (self, CHAN_WEAPON, "weapons/lhit.wav", 1, ATTN_NORM);
+		self.t_width = time + 0.6;
+	}
+	
+	org = self.origin;
+	
+	makevectors(self.angles);
+	
+	traceline (org, org + v_forward*self.distance, TRUE, self);
+	
+	WriteByte (MSG_BROADCAST, SVC_TEMPENTITY);
+	WriteByte (MSG_BROADCAST, TE_LIGHTNING2);
+	WriteEntity (MSG_BROADCAST, self);
+	WriteCoord (MSG_BROADCAST, org_x);
+	WriteCoord (MSG_BROADCAST, org_y);
+	WriteCoord (MSG_BROADCAST, org_z);
+	WriteCoord (MSG_BROADCAST, trace_endpos_x);
+	WriteCoord (MSG_BROADCAST, trace_endpos_y);
+	WriteCoord (MSG_BROADCAST, trace_endpos_z);
+
+	LightningDamage (self.origin, trace_endpos + v_forward*4, self, 10);
+};
+
+void() trap_lightning = {
+	if (!self.distance) {
+		self.distance = 600;
+	}
+	self.think = trap_lightning_think;
+	self.nextthink = 2;
+	self.use = SUB_toggle;
 };
 
 /*

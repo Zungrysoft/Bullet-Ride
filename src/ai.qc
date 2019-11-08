@@ -376,7 +376,7 @@ float() FindTarget =
 // spawnflags & 3 is a big hack, because zombie crucified used the first
 // spawn flag prior to the ambush flag, and I forgot about it, so the second
 // spawn flag works as well
-	if (sight_entity_time >= time - 0.1 && !(self.spawnflags & 3) )
+	if (sight_entity_time >= time - 0.1 && !(self.spawnflags & 3))
 	{
 		client = sight_entity;
 		if (client.enemy == self.enemy)
@@ -396,6 +396,11 @@ float() FindTarget =
 		return FALSE;
 	if (client.items & IT_INVISIBILITY)
 		return FALSE;
+	if (client.enemy) {
+		if (client.enemy.items & IT_INVISIBILITY) {
+			return FALSE;
+		}
+	}
 
 	r = range (client);
 	if (r == RANGE_FAR)
@@ -699,13 +704,17 @@ The monster has an enemy it is trying to kill
 */
 void(float dist) ai_run =
 {
+	if (!(self.enemy.items & IT_INVISIBILITY)) {
+		self.still_visible = time + 5;
+	}
+	
 	movedist = dist;
-// see if the enemy is dead
-	if (self.enemy.health <= 0)
+// see if the enemy is dead or has been invisible for five seconds
+	if (self.enemy.health <= 0 || self.still_visible < time)
 	{
 		self.enemy = world;
 	// FIXME: look all around for other targets
-		if (self.oldenemy.health > 0)
+		if (self.oldenemy.health > 0 && !(self.oldenemy.items & IT_INVISIBILITY))
 		{
 			self.enemy = self.oldenemy;
 			HuntTarget ();
@@ -724,8 +733,9 @@ void(float dist) ai_run =
 
 // check knowledge of enemy
 	enemy_vis = visible(self.enemy);
-	if (enemy_vis)
+	if (enemy_vis) {
 		self.search_time = time + 5;
+	}
 
 // look for other coop players
 	if (coop && self.search_time < time)

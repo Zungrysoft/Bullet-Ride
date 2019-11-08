@@ -132,11 +132,15 @@ void() laser_particle = {
 
 void(vector org, vector vec) LaunchLaser =
 {
+	float plasma = 0;
+	if (self.classname == "monster_gunner" || self.spawnflags & 4) {
+		plasma = 1;
+	}
 	
-	if (self.classname == "monster_enforcer") {
-		sound (self, CHAN_WEAPON, "enforcer/enfire.wav", 1, ATTN_NORM);
-	} else if (self.classname == "monster_gunner") {
+	if (plasma) {
 		sound (self, CHAN_WEAPON, "enforcer/gunfire.wav", 1, ATTN_NORM);
+	} else {
+		sound (self, CHAN_WEAPON, "enforcer/enfire.wav", 1, ATTN_NORM);
 	}
 	
 	vec = normalize(vec);
@@ -147,7 +151,7 @@ void(vector org, vector vec) LaunchLaser =
 	newmis.solid = SOLID_BBOX;
 	newmis.effects = EF_DIMLIGHT;
 
-	if (self.classname == "monster_gunner") {
+	if (plasma) {
 		setmodel (newmis, "progs/laser2.mdl");
 		newmis.classname = "laser";
 	} else {
@@ -161,7 +165,7 @@ void(vector org, vector vec) LaunchLaser =
 	newmis.velocity = vec * 600;
 	newmis.angles = vectoangles(newmis.velocity);
 
-	if (self.classname == "monster_gunner") {
+	if (plasma) {
 		newmis.touch = Laser_Touch2;
 		newmis.nextthink = time + .1;
 		newmis.think = laser_particle;
@@ -244,6 +248,7 @@ SUB_CheckRefire (enf_atk1);
 };
 
 float() gunner_refire;
+void() enf_gun9;
 
 void()	enf_gun1	=[	$attack1,	enf_gun2	] {ai_face();};
 void()	enf_gun2	=[	$attack2,	enf_gun3	] {ai_face();};
@@ -252,16 +257,26 @@ void()	enf_gun4	=[	$attack4,	enf_gun5	] {ai_face();};
 void()	enf_gun5	=[	$attack5,	enf_gun6	] {ai_face();};
 void()	enf_gun6	=[	$attack6,	enf_gun8	] {enforcer_fire();};
 //void()	enf_gun7	=[	$attack7,	enf_gun8	] {ai_face();};
-void()	enf_gun8	=[	$attack8,	enf_gun9	] {ai_face();
+void()	enf_gun8	=[	$attack8,	enf_gun5	] {ai_face();
 	if (gunner_refire()) {
 		self.lefty = 0;
 	} else {
 		self.lefty ++;
 	}
 	//If the enemy is in sight or was recently, continue firing.
-	//If the animation has repeated four times despite the target being out of range, let it end.
-	if (self.lefty < 4) {
-		self.think = enf_gun5;
+	//If the animation has repeated four times despite the target being out of view, stop firing.
+	if (self.lefty >= 4) {
+		self.think = enf_gun9;
+		self.lefty = 0;
+	}
+	
+	if (!(self.enemy.items & IT_INVISIBILITY)) {
+		self.still_visible = time + 5;
+	}
+	// see if the enemy is dead or has been invisible for five seconds, stop shooting.
+	if (self.enemy.health <= 0 || self.still_visible < time) {
+		self.think = enf_gun9;
+		self.lefty = 0;
 	}
 };
 void()	enf_gun9	=[	$attack9,	enf_gun10	] {ai_face();};
