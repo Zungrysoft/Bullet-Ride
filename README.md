@@ -49,6 +49,21 @@ New Weapons:
 Railgun - This long-ranged rifle from Quake 2 does heavy damage and pierces enemies!
 Flamethrower - This particle-based weapon will keep enemies from getting anywhere near you! Hitting enemies at close range deals more damage.
 
+New Monsters:
+-------------
+Lost Soul
+Pain Elemental
+Ultimus
+
+Combat Changes:
+---------------
+-Vore projectiles stop homing in on you once the parent Vore has been killed.
+-If you have the Ring of Shadows active, monsters will forget about you after five seconds of not damaging them. Damaging monsters while you are invisible also won't cause them to alert other monsters. Great for tricking monsters into infighting!
+-Grunts have limited range.
+-You can fire weapons as long as you have at least one ammo for that weapon.
+-The Super Nailgun is now an upgrade for the Nailgun and occupies slot 4. Press your slot 4 key again to toggle between the two.
+-The Flamethrower occupies Slot 9. (Bind a key to "impulse 225" to quick-switch.)
+-Many combat bugs have been fixed.
 
 
 
