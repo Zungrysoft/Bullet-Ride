@@ -255,26 +255,6 @@ void(float num) print_bits= {
 	bprint("\n");
 }
 
-void() debugFunc = {
-	//bprint(ftos(time));
-	//bprint("\n");
-	//centerprint(nextent(world),"ERROR\n-----\nYou have installed\nthis mod incorrectly!!\n-----\nPlease read the readme file\nfor more information.");
-	//print_bits(2);
-	
-	/*for (float i = 0; i < 8; i ++) {
-		set_rune(14, i, 1);
-	}*/
-	
-	//print_bits(runeflags[14]);
-	//centerprint(nextent(world),ftos(get_runeflag(14,1)));
-	
-	for (float i = 0; i < 16; i ++) {
-		print_bits(runeflags[i]);
-	}
-}
-
-
-
 void(float index, float val) set_ent_data = {
 	if (index < 0 || index > (ENT_DATA_SIZE * 23)) {
 		//return if out of range
@@ -352,3 +332,30 @@ float (entity obj, string dest, float no_effects) teleport_object = {
 	obj.flags = obj.flags - (obj.flags & FL_ONGROUND);
 	return TRUE;
 }
+
+void() debugFunc = {
+	//bprint(ftos(time));
+	//bprint("\n");
+	//centerprint(nextent(world),"ERROR\n-----\nYou have installed\nthis mod incorrectly!!\n-----\nPlease read the readme file\nfor more information.");
+	//print_bits(2);
+	
+	/*for (float i = 0; i < 8; i ++) {
+		set_rune(14, i, 1);
+	}*/
+	
+	//print_bits(runeflags[14]);
+	//centerprint(nextent(world),ftos(get_runeflag(14,1)));
+	entity t = find(world, classname, "monster_lostsoul");
+	if (t) {
+		bprint(ftos(t.flags & FL_ONGROUND));
+		bprint("\n");
+		t.flags = t.flags - (t.flags & FL_ONGROUND);
+		t.velocity = '0 0 50';
+	} else {
+		bprint("NOPE\n");
+	}
+}
+
+
+
+

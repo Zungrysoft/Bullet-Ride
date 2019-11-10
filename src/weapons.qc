@@ -739,6 +739,19 @@ void() W_FireRail =
 	
 };
 
+//Return TRUE if they are a projectile that can be reflected.
+float(string s) reflectable = {
+	if (s == "grenade")			{return 1;}
+	if (s == "nail")			{return 1;}
+	
+	
+	return 0;
+}
+
+void() W_FireReflect = {
+	
+}
+
 
 
 //=============================================================================

@@ -496,7 +496,7 @@ void() weapon_touch =
 			return;
 		hadammo = other.ammo_rockets;			
 		new = IT_RAILGUN;
-		other.ammo_nails = other.ammo_nails + 50;
+		other.ammo_nails = other.ammo_nails + 30;
 	}
 	else if (self.classname == "weapon_shotgun")
 	{

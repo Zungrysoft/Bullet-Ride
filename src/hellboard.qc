@@ -2,7 +2,7 @@
 
 .float hb_val;
 
-float() three_pattern_vert = {
+/*float() three_pattern_vert = {
 	//Checks for vertical solutions
 	//i represents the row
 	//j represents the column
@@ -94,6 +94,20 @@ float() three_pattern_diag2 = {
 				return 1;
 			}
 		}
+	}
+	return 0;
+}*/
+
+float() three_pattern = {
+	float i = 0;
+	float found = 0;
+	for (; i < 25; i ++) {
+		if (get_ent_data(i)) {
+			found ++;
+		}
+	}
+	if (found >= 3) {
+		return 1;
 	}
 	return 0;
 }
@@ -189,7 +203,7 @@ float() twelve_pattern = {
 }
 
 void() hellboard_check = {
-	if (three_pattern_vert() || three_pattern_horiz() || three_pattern_diag1() || three_pattern_diag2()) {
+	if (three_pattern()) {
 		self.target = "gate1";
 		SUB_UseTargets();
 	}

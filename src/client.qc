@@ -1328,7 +1328,6 @@ called each time a player is spawned
 void() DecodeLevelParms;
 void() PlayerDie;
 
-
 void() PutClientInServer =
 {
 	local	entity spot;
@@ -2096,9 +2095,9 @@ void(entity targ, entity attacker) ClientObituary =
 				attacker.frags = attacker.frags - 1;
 				bprint (targ.netname);
 				
-				if (targ.weapon == 64 && targ.waterlevel > 1)
+				if (targ.weapon == IT_LIGHTNING && targ.waterlevel > 1)
 				{
-					bprint (" discharges into the water.\n");
+					bprint (" discharges into the water\n");
 					return;
 				}
 				if (targ.weapon == IT_GRENADE_LAUNCHER)

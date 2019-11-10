@@ -244,7 +244,7 @@ void(entity inflictor, entity attacker, float damage, entity ignore) T_RadiusDam
 	local	float 	points;
 	local	entity	head;
 	local	vector	org;
-
+	
 	head = findradius(inflictor.origin, damage+40);
 	
 	while (head)
