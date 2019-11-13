@@ -771,6 +771,8 @@ void(float dist) ai_run =
 	}
 		
 // head straight in
-	 movetogoal (dist);		// done in C code...
+	if (self.movetype == MOVETYPE_STEP) {
+		movetogoal (dist);		// done in C code...
+	}
 };
 

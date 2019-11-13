@@ -8,7 +8,7 @@
 #define attempts gravity
 #define current_level global_rune_total
 
-//File Description:
+//maze.qc File Description:
 /* Defines the misc_maze entity, which is used to control the state of walls in a randomly generated maze.
 The maze uses a modified version of the hunt-and-kill algorithm.
 The maze has multiple levels that let the maze open up periodically

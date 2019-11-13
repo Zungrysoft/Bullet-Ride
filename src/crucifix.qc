@@ -1,6 +1,6 @@
 //Code written by ZungryWare
 
-//File Description:
+//crucifix.qc File Description:
 /* Defines the trap_crucifix entity, which will periodically resurrect dead monsters within its boundaries.
 Designed specifically for use in Balt Ghadlef */
 

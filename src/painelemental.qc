@@ -274,7 +274,51 @@ void() painelem_Shoot =
 };
 
 void() painelem_Deploy = {
+	entity missile;
+	entity oself;
 	
+	//Spawns the monster
+	missile = spawn();
+
+	//Set all of the necessary properties of the new monster
+	missile.solid = SOLID_SLIDEBOX;
+	missile.movetype = MOVETYPE_FLY;
+	missile.takedamage = DAMAGE_AIM;
+	missile.owner = self;
+
+	setmodel (missile, "progs/lostsoul.mdl");
+	
+	setorigin (missile, self.origin + '0 0 24');
+	setsize (missile, VEC_HULL_MIN, VEC_HULL_MAX);
+	missile.angles = self.angles;
+	missile.health = 50;
+	missile.classname = "monster_lostsoul_spawn";
+
+	missile.th_stand = soul_stand1;
+	missile.th_walk = soul_walk1;
+	missile.th_run = soul_run1;
+	missile.th_die = soul_die;
+	missile.th_missile = soul_missile;
+	missile.th_pain = soul_pain;
+	missile.touch = SUB_Null;
+		
+	if (self.spawnflags & 2) {
+		missile.target = self.target;
+		missile.alpha = self.alpha;
+	}
+	
+	oself = self;
+	self = missile;
+	walkmonster_start_go();
+	self = oself;
+	
+	missile.enemy = self.enemy;
+	missile.think = soul_precharge4;
+	missile.nextthink = time + .01;
+	
+	
+	total_monsters = total_monsters + 1;
+	update_monsters();
 }
 
 void() painelem_attacka1 = [ $attacka1, painelem_attacka2 ] {ai_face();eye_position('0 16.741 37.384');};
@@ -368,6 +412,8 @@ void() monster_pain_elemental = {
 		remove(self);
 		return;
 	}
+	
+	//Pain Elemental precaches
 	precache_model ("progs/painelem.mdl");
 	precache_model ("progs/laser.mdl");
 	precache_sound ("painelem/pain.wav");
@@ -375,6 +421,15 @@ void() monster_pain_elemental = {
 	//precache_sound ("painelem/idle.wav");
 	precache_sound ("painelem/death.wav");
 	precache_sound ("shambler/smack.wav");
+	
+	//Lost Soul precaches
+	precache_model ("progs/lostsoul.mdl");
+	precache_sound ("lostsoul/bite.wav");
+	precache_sound ("lostsoul/charge.wav");
+	precache_sound ("lostsoul/death.wav");
+	precache_sound ("lostsoul/idle1.wav");
+	precache_sound ("lostsoul/idle2.wav");
+	precache_sound ("lostsoul/pain1.wav");
 	
 	self.solid = SOLID_SLIDEBOX;
 	self.movetype = MOVETYPE_STEP;

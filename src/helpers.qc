@@ -345,7 +345,7 @@ void() debugFunc = {
 	
 	//print_bits(runeflags[14]);
 	//centerprint(nextent(world),ftos(get_runeflag(14,1)));
-	entity t = find(world, classname, "monster_lostsoul");
+	/*entity t = find(world, classname, "monster_lostsoul");
 	if (t) {
 		bprint(ftos(t.flags & FL_ONGROUND));
 		bprint("\n");
@@ -353,7 +353,17 @@ void() debugFunc = {
 		t.velocity = '0 0 50';
 	} else {
 		bprint("NOPE\n");
+	}*/
+	float r = 0;
+	float g = 1;
+	for (float i = 0; i < 400; i ++) {
+		r = (random() + random() + random())*40;
+		if (r > g) {
+			g = r;
+		}
 	}
+	bprint(ftos(g));
+	bprint("\n");
 }
 
 
