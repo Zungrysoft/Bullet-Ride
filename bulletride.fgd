@@ -1,0 +1,488 @@
+@baseclass = Appearflags [
+	spawnflags(Flags) =
+	[
+		256 : "Not in Easy" : 0
+		512 : "Not in Normal" : 0
+		1024 : "Not in Hard" : 0
+		2048 : "Not in Deathmatch" : 0
+	]
+]
+
+@PointClass base(Appearflags) = effect_changemusic : "Change Music" 
+[
+	targetname(string) : "Name"
+	sounds(integer) : "CD Track to Play"
+]
+
+@PointClass base(Appearflags) = effect_countkill : "Count Kill" 
+[
+	targetname(string) : "Name"
+	count(integer) : "Monsters to Account For" : 1
+]
+
+@PointClass base(Appearflags) = effect_globalmsg : "Global Message" 
+[
+	targetname(string) : "Name"
+	message(string) : "Message"
+	sounds(choices) : "Sound style" : 2 =
+	[
+		0 : "None"
+		1 : "Secret sound"
+		2 : "Beep beep"
+		3 : "Large switch"
+	]
+]
+
+@SolidClass base(Appearflags) = trigger_hint : "Hint Giver"
+[
+	mission0(string) : "Mission 0"
+	mission1(string) : "Mission 1"
+	mission2(string) : "Mission 2"
+	mission3(string) : "Mission 3"
+	mission4(string) : "Mission 4"
+	mission5(string) : "Mission 5"
+	mission6(string) : "Mission 6"
+	mission7(string) : "Mission 7"
+	mission8(string) : "Mission 8"
+	mission9(string) : "Mission 9"
+	mission10(string) : "Mission 10"
+	mission11(string) : "Mission 11"
+	mission12(string) : "Mission 12"
+	mission13(string) : "Mission 13"
+	mission14(string) : "Mission 14"
+]
+
+@PointClass base(Appearflags) = effect_localcmd : "Local Command" 
+[
+	targetname(string) : "Name"
+	message(string) : "Command"
+]
+
+@PointClass base(Appearflags) = effect_progressionbit : "Progression Bit Setter" 
+[
+	targetname(string) : "Name"
+	count(integer) : "Which bit to set. (0, 1, or 2)"
+	spawnflags(Flags) =
+	[
+		1 : "Sets to Off" : 0
+		2 : "Toggles Bit" : 0
+	]
+]
+
+@PointClass base(Appearflags) = effect_random_list : "Random List" 
+[
+	targetname(string) : "Name"
+	count(integer) : "Number of Items"
+	height(integer) : "Starting Value"
+	spawnflags(Flags) =
+	[
+		1 : "No Repeats" : 0
+	]
+]
+
+@PointClass base(Appearflags) = effect_revive : "Revive Monster" 
+[
+	targetname(string) : "Name"
+	target(string) : "Target"
+]
+
+@PointClass base(Appearflags) = effect_stuffcmd : "Stuff Command" 
+[
+	targetname(string) : "Name"
+	message(string) : "Command"
+]
+
+@PointClass base(Appearflags) = effect_teleport : "Teleport Effect" 
+[
+	targetname(string) : "Name"
+	target(string) : "Destination"
+	message(string) : "Object (optional)"
+]
+
+@PointClass base(Appearflags) = effect_unlockitem : "Unlock Item"
+[
+	targetname(string) : "Name"
+	rune_id(choices) : "Item/Effect to Unlock" : 6 =
+	[
+		6 : "Double-Barreled Shotgun"
+		7 : "Nailgun"
+		8 : "Super Nailgun"
+		9 : "Grenade Launcher"
+		10 : "Rocket Launcher"
+		11 : "Thunderbolt"
+		12 : "Railgun"
+		13 : "Flamethrower"
+		14 : "BFG 9000"
+		15 : "Shadow Blade"
+	]
+]
+
+@SolidClass base(Appearflags) = func_breakable : "Breakable"
+[
+	health(integer) : "Health"
+	targetname(string) : "Name"
+	target(string) : "Target"
+	killtarget(string) : "Kill Target"
+	delay(string) : "Delay Before Trigger"
+	message(string) : "Message"
+	count(float) : "Number of Gibs"
+	gib1(string) : "Gib Model 1"
+	gib2(string) : "Gib Model 2"
+	gib3(string) : "Gib Model 3"
+	gib4(string) : "Gib Model 4"
+	noise1(string) : "Noise 1"
+	noise2(string) : "Noise 2"
+	noise3(string) : "Noise 3"
+	noise4(string) : "Noise 4"
+	spawnflags(Flags) =
+	[
+		1 : "Must be Targetted" : 0
+	]
+]
+
+@PointClass base(Appearflags) = filter_hasrune : "Has Rune Filter" 
+[
+	targetname(string) : "Name"
+	target(string) : "Target"
+	rune_id(integer) : "Rune to Check"
+	level_id(integer) : "Level to Check From"
+	spawnflags(Flags) =
+	[
+		1 : "Inverted Output" : 0
+	]
+]
+
+@PointClass base(Appearflags) = filter_newgame : "New Game Filter" 
+[
+	targetname(string) : "Name"
+	target(string) : "Target"
+	spawnflags(Flags) =
+	[
+		1 : "Inverted Output" : 0
+	]
+]
+
+@PointClass base(Appearflags) = filter_onceperplayer : "Once Per Player Filter" 
+[
+	targetname(string) : "Name"
+	target(string) : "Target"
+	spawnflags(Flags) =
+	[
+		1 : "Inverted Output" : 0
+	]
+]
+
+@PointClass base(Appearflags) = filter_progressionbit : "Progression Bit Filter" 
+[
+	targetname(string) : "Name"
+	target(string) : "Target"
+	count(integer) : "Which bit to check. (0, 1, or 2)"
+	spawnflags(Flags) =
+	[
+		1 : "Inverted Output" : 0
+	]
+]
+
+@PointClass base(Appearflags) = filter_runecount : "Rune Count Filter" 
+[
+	targetname(string) : "Name"
+	target(string) : "Target"
+	count(integer) : "Runes to Trigger"
+	spawnflags(Flags) =
+	[
+		1 : "Inverted Output" : 0
+	]
+]
+
+@PointClass base(Appearflags) = filter_switchable : "Switchable Filter" 
+[
+	targetname(string) : "Name"
+	target(string) : "Target"
+	spawnflags(Flags) =
+	[
+		1 : "Start Enabled" : 0
+	]
+]
+
+@SolidClass  base(Appearflags) = func_monsterclip : "Monsterclip" 
+[
+]
+
+@PointClass base(Appearflags) = effect_lightstyle : "Lightstyle Definition" 
+[
+	targetname(string) : "Name"
+	message(string) : "Lightstyle Value"
+	style(integer) : "Lightstyle ID to Use" : 12
+]
+
+@PointClass size(-16 -16 -24, 16 16 32) offset(0 0 24) base(Appearflags) studio("progs/rune1.mdl") = item_rune : "Rune" 
+[
+	rune_id(integer) : "Rune Number in This Level"
+	level_id(integer) : "Associated Level"
+	rune_mdl(integer) : "Skin"
+	map(string) : "Map To Go To"
+	
+	spawnflags(Flags) =
+	[
+		1 : "No Intermission" : 0
+		2 : "No Exit" : 0
+		4 : "Display Rune" : 0
+	]
+]
+
+@PointClass size(-10 -10 -12, 12 12 18) offset(0 0 12) base() studio("progs/flame2.mdl") sequence(0) = misc_flame_switchable : "Small white flame" 
+[
+	targetname(string) : "Name"
+	spawnflags(Flags) = 
+	[
+		1 : "Initially dark" : 0
+	]
+]
+
+@PointClass base(Appearflags) = misc_model : "Model" 
+[
+	message(string) : "Model File Path"
+	skin(integer) : "Skin"
+	
+	spawnflags(Flags) =
+	[
+		1 : "Not Static" : 0
+	]
+]
+
+@baseclass base(Appearflags) flags(Angle) color(220 0 0) offset(0 0 24) = Monster 
+[
+	targetname(string) : "Name"
+	target(string) : "Target"
+	spawnflags(Flags) = 
+	[
+		1 : "Ambush" : 0
+	]
+]
+
+@PointClass base(Monster, Appearflags) size(32 32 48) studio("progs/hellogre.mdl") = monster_hell_ogre : "Hell Ogre" []
+
+@PointClass base(Monster, Appearflags) size(32 32 48) studio("progs/lostsoul.mdl") = monster_lostsoul : "Lost Soul" []
+
+@PointClass base(Monster, Appearflags) size(32 32 48) studio("progs/gunner.mdl") = monster_gunner : "Gunner" []
+
+@PointClass base(Monster, Appearflags) size(-32 -32 -24, 32 32 64) studio("progs/painelem.mdl") = monster_pain_elemental : "Pain Elemental" 
+[
+	spawnflags(Flags) =
+	[
+		1 : "Ambush" : 0
+		2 : "Inherit Keys" : 0
+	]
+]
+
+@SolidClass base(Appearflags) = trap_crucifix : "Crucifix"
+[
+	targetname(string) : "Name"
+	target(string) : "Lightning Source"
+	wait(string) : "Wait Between Resurrections"
+]
+
+@PointClass base(Appearflags) flags(Angle) = trap_flamethrower : "Flamethrower Trap"
+[
+	targetname(string) : "Name"
+	angles(string) : "Angles"
+	speed(string) : "Speed"
+	wait(string) : "Spread Angle"
+	spawnflags(Flags) = 
+	[
+		1 : "Start Disabled" : 0
+		2 : "Glowing Flames" : 0
+	]
+]
+
+@PointClass base(Appearflags) flags(Angle) = trap_grenade : "Grenade Trap"
+[
+	targetname(string) : "Name"
+	angles(string) : "Angles"
+]
+
+@PointClass base(Appearflags) flags(Angle) = trap_lightning : "Lightning Trap"
+[
+	targetname(string) : "Name"
+	angles(string) : "Angles"
+	distance(string) : "Range"
+	spawnflags(Flags) = 
+	[
+		1 : "Start Disabled" : 0
+	]
+]
+
+@PointClass base(Appearflags) flags(Angle) = trap_rocket : "Rocket Trap"
+[
+	targetname(string) : "Name"
+	angles(string) : "Angles"
+]
+
+@PointClass base(Appearflags) = trigger_auto : "Automatic Trigger" 
+[
+	target(string) : "Target"
+]
+
+@SolidClass  base(Targetname) = trigger_honey : "Honey Slowdown Volume" 
+[
+]
+
+@SolidClass base(Appearflags) = trigger_levelstatus : "Level Status" 
+[
+	targetname(string) : "Name"
+	level_id(integer) : "Associated Level ID"
+	message(string) : "Name of Associated Level"
+	count(integer) : "Number of Runes in Level"
+	spawnflags(Flags) =
+	[
+		1 : "Start Disabled" : 0
+	]
+]
+
+@PointClass base(Appearflags) = trigger_killall : "Killall Trigger" 
+[
+	target(string) : "Target"
+	message(string) : "Message"
+]
+
+
+//Redefinitions of vanilla classes
+
+@baseclass size(0 0 0, 32 32 32) color(80 0 200) base(Appearflags) = Ammo
+[
+	target(string) : "Target"
+	message(string) : "Message"
+	wait(string) : "Wait Before Respawn"
+	spawnflags(flags) = 
+	[
+		1 : "Large box" : 0
+		2 : "Safety Ammo" : 0
+	]
+]
+
+@PointClass base(Ammo) studio("maps/b_batt0.bsp") = item_cells : "Thunderbolt ammo" []
+@PointClass base(Ammo) studio("maps/b_rock0.bsp") = item_rockets : "Rockets" []
+@PointClass base(Ammo) studio("maps/b_shell0.bsp") = item_shells : "Shells" []
+@PointClass base(Ammo) studio("maps/b_nail0.bsp") = item_spikes : "Nailgun ammo" []
+
+@PointClass base(Appearflags) flags(Angle) = info_intermission : "Intermission camera" 
+[
+	angles(string) : "Angles (Pitch Yaw Roll)"
+	mangle(string) : "Mangle (Pitch Yaw Roll)"
+	rune_id(integer) : "Associated Rune"
+]
+
+@PointClass base(Appearflags) = misc_teleporttrain : "Teleport Train" 
+[
+	targetname(string) : "Name"
+	target(string) : "First Stop Target"
+	speed(integer) : "Speed"
+]
+
+@PointClass base(Target, Targetname) = trigger_counter : "Trigger counter" 
+[
+	targetname(string) : "Name"
+	target(string) : "Target"
+	count(integer) : "Count before activation" : 2
+	spawnflags(flags) = 
+	[
+		1: "No Message" : 0
+		2: "No Extended Counting" : 0
+	]
+]
+
+@SolidClass  base(Appearflags) = trigger_hurt : "Hurt Trigger" 
+[
+	dmg(choices) : "Damage" : 5 =
+	[
+		9999 : "Falling Death"
+		10000 : "Void Death"
+	]
+	delay(integer) : "Time Between Damage"
+]
+
+@SolidClass base(Appearflags) = trigger_push : "Push Trigger"
+[
+	targetname(string) : "Name"
+	speed(integer) : "Speed of push" : 1000
+	angles(string) : "Angles (Pitch Yaw Roll)"
+	spawnflags(Flags) =
+	[
+		1 : "Once Only" : 0
+		2 : "Two Way" : 0
+		4 : "Start Disabled" : 0
+	]
+]
+
+@SolidClass  base(Targetname) = trigger_secret : "Error Warning" 
+[
+	message(string) : "Error Message" : "ERROR\n-----\nYou have installed\nthis mod incorrectly!!\n-----\nPlease read the readme file\nfor more information."
+	target(string) : "Lock Target"
+	sounds(choices) : "Sound style" : 3 =
+	[
+		0 : "None"
+		1 : "Secret sound"
+		2 : "Beep beep"
+		3 : "Large switch"
+	]
+	
+]
+
+@SolidClass base(Appearflags) = trigger_teleport : "Teleport Trigger" 
+[
+	targetname(string) : "Name"
+	target(string) : "Destination"
+	spawnflags(Flags) =
+	[
+		1 : "Player only" : 0
+		2 : "Silent" : 0
+		4 : "Teleports Anything" : 0
+	]
+]
+
+
+
+@baseclass base(Appearflags) flags(Angle) size(-16 -16 -24, 16 16 32) offset(0 0 24) 
+	color(0 255 0) = PlayerClass []
+	
+@baseclass base(Appearflags) flags(Angle) size(-16 -16 -24, 16 16 32) offset(0 0 24) 
+	color(0 0 255) = CoopClass []
+	
+@baseclass base(Appearflags) flags(Angle) size(-16 -16 -24, 16 16 32) offset(0 0 24) 
+	color(100 255 100) = PlayerClass2 []
+	
+@baseclass base(Appearflags) flags(Angle) size(-16 -16 -24, 16 16 32) offset(0 0 24) 
+	color(100 100 255) = CoopClass2 []
+
+@PointClass base(PlayerClass) = info_player_start : "Singleplayer Start" []
+@PointClass base(CoopClass) = info_player_coop : "Cooperative Start" []
+
+@PointClass base(PlayerClass2) = info_player_start_return : "Singleplayer Return" [level_id(integer) : "Associated Level ID"]
+@PointClass base(CoopClass2) = info_player_coop_return : "Cooperative Return" [level_id(integer) : "Associated Level ID"]
+
+@baseclass size(-16 -16 0, 16 16 32) color(0 0 200) base(Appearflags) = Weapon 
+[
+	spawnflags(Flags) = [ 1 : "Always Usable" : 0 ]
+	target(string) : "Target"
+	delay(string) : "Delay Before Trigger"
+	message(string) : "Message"
+]
+
+@PointClass base(Weapon) studio("progs/g_shot.mdl") = weapon_supershotgun : "Double Barreled Shotgun" []
+@PointClass base(Weapon) studio("progs/g_nail.mdl") = weapon_nailgun : "Nailgun" []
+@PointClass base(Weapon) studio("progs/g_nail2.mdl") = weapon_supernailgun : "Perforator" []
+@PointClass base(Weapon) studio("progs/g_rock.mdl") = weapon_grenadelauncher : "Grenade launcher" []
+@PointClass base(Weapon) studio("progs/g_rock2.mdl") = weapon_rocketlauncher : "Rocket launcher" []
+@PointClass base(Weapon) studio("progs/g_light.mdl") = weapon_lightning : "Thunderbolt" []
+@PointClass base(Weapon) studio("progs/g_shot.mdl") = weapon_flamethrower : "Flamethrower" []
+@PointClass base(Weapon) studio("progs/g_shot1.mdl") = weapon_shotgun : "Shotgun" []
+@PointClass base(Weapon) studio("progs/g_rail.mdl") = weapon_railgun : "Railgun" []
+@PointClass base(Weapon) studio("progs/g_swd.mdl") = weapon_shadowblade : "Shadow Blade" []
+
+
+
+
+
+
+
+
