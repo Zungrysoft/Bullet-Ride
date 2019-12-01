@@ -796,4 +796,7 @@ float(entity target) revive;
 //Essentially used as a pass-in value for when one entity targets another.
 .float target_mod;
 
+//Secondary target value
+.string target1;
+
  

@@ -2210,7 +2210,7 @@ void(entity targ, entity attacker) ClientObituary =
 					bprint (" was blasted by an Enforcer\n");
 				if (attacker.classname == "monster_fish")
 					bprint (" was fed to the Rotfish\n");
-				if (attacker.classname == "monster_lostsoul")
+				if (attacker.classname == "monster_lostsoul" || attacker.classname == "monster_lostsoul_spawn")
 					bprint (" was shaken by a Lost Soul\n");
 				if (attacker.classname == "monster_hell_knight") 
 					bprint (" was slain by a Death Knight\n");

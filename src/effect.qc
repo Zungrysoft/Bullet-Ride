@@ -294,8 +294,9 @@ void() random_list_use = {
 			}
 		}
 		if (num_avail == 0) {
-			self.use = SUB_Null;
-			return;
+			self.target = self.target1;
+			SUB_UseTargets();
+			remove(self);
 		}
 		choice = floor(random() * num_avail);
 		for (float i = 0; i < choice + 1; i ++) {
@@ -316,5 +317,23 @@ void() random_list_use = {
 
 void() effect_random_list = {
 	self.use = random_list_use;
+	self.target1 = self.target;
 }
 
+void() ordered_list_use = {
+	if (self.lefty < self.count) {
+		self.target = ftos(self.height + self.lefty);
+		self.lefty ++;
+		SUB_UseTargets();
+	}
+	if (self.lefty >= self.count) {
+		self.target = self.target1;
+		SUB_UseTargets();
+		remove(self);
+	}
+}
+
+void() effect_ordered_list = {
+	self.use = random_list_use;
+	self.target1 = self.target;
+}

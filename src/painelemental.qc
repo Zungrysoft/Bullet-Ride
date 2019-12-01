@@ -309,7 +309,7 @@ void() painelem_Deploy = {
 	
 	oself = self;
 	self = missile;
-	walkmonster_start_go();
+	flymonster_start_go();
 	self = oself;
 	
 	missile.enemy = self.enemy;

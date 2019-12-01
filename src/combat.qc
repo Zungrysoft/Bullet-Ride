@@ -127,6 +127,15 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 
 	if (!targ.takedamage)
 		return;
+	
+	//Oozes can only be damaged via melee weapons
+	//Kinda dumb to put this code here, but implementing an entirely new system for damage immunities
+	//that only two entities will use seems pointless
+	if (targ.classname == "boss_ooze") {
+		if (inflictor != attacker || attacker.weapon != IT_AXE) {
+			return;
+		}
+	}
 
 // used by buttons and triggers to set activator for target firing
 	damage_attacker = attacker;
